@@ -11,3 +11,8 @@
 ### correlation, cross correlation, K-means
 
 ongoing
+
+
+## Sources
+* John Hopkins University Center for Systems Science and Engineering [(JHU CSSE)](https://github.com/CSSEGISandData/COVID-19)
+* .csv dataset from [here](https://github.com/RamiKrispin/coronavirus)
