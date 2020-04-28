@@ -3,14 +3,20 @@
 ### visualisation with plotly, seaborn, matplotlib
 
 ## Load dataset from JHU
+* to do: get data from URL. Load into pandas DataFrame
+
 ## Clean dataset
+* regrouped regions into single country *optional*
+* Canada data was not properly entered: *fixed*
+
 ## Transform dataset to pandas.DataFrame
 
 ## Data description / presentation
 ## Data analyses
 ### correlation, cross correlation, K-means
 
-ongoing
+ongoing development
+
 
 
 ## Sources

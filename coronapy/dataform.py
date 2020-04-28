@@ -25,9 +25,9 @@ def country_basic_data(df, country) -> dict:
     # total cases all types, change since previous update (day before check date of upload then)
     ctry = get_country(df, country)
     return {'confirmed': ctry['cumul confirmed'].iloc[-1],
-           'new confirmed': ctry['confirmed'].iloc[-1],
+            'new confirmed': ctry['confirmed'].iloc[-1],
             'deaths': ctry['cumul death'].iloc[-1],
-           'new deaths': ctry['death'].iloc[-1]}
+            'new deaths': ctry['death'].iloc[-1]}
 
 
 def global_description(df, focus=None) -> pnd.DataFrame:
@@ -52,20 +52,20 @@ def get_country(df, country) -> pnd.DataFrame:
 def get_province(df, province) -> pnd.DataFrame:
     assert province in df['Province'].unique().tolist(), print(f"{province} not in list, options are {list_provinces(df)}")
     return df.query("@province in Province")
-          
-        
-          
+
+
 def list_all_countries(df) -> list:
     return df['Country'].unique().tolist()
-          
+
+
 def list_provinces(df) -> list:
     return df['Province'].unique().tolist()
 
-          
+
 def get_status(df, status):
     '''deprecated'''
     assert status in df['type'].unique().tolist(), print(f"possible status are {(df['type'].unique().tolist())}")
-    return df[df['type']==status]
+    return df[df['type'] == status]
           
                                                          
 def get_countryWith_provinces(df) -> list:
@@ -227,11 +227,11 @@ def transform(df:pnd.DataFrame) -> pnd.DataFrame:
                         rsum[0] += c[c['type']=='confirmed']['cases'].values[0]
                         rsum[1] += c[c['type']=='death']['cases'].values[0]
                         rsum[2] += c[c['type']=='recovered']['cases'].values[0]
-                        res.append({'Country':country, 'Province':province, 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
-                                    'confirmed':c[c['type']=='confirmed']['cases'].values[0],
-                                    'death':c[c['type']=='death']['cases'].values[0],
-                                    'recovered':c[c['type']=='recovered']['cases'].values[0],
-                                    'cumul confirmed':rsum[0], 'cumul death':rsum[1], 'cumul recovered':rsum[2]
+                        res.append({'Country': country, 'Province':province, 'Lat': c.iloc[0]['Lat'], 'Long': c.iloc[0]['Long'], 'date':date,
+                                    'confirmed': c[c['type'] == 'confirmed']['cases'].values[0],
+                                    'death': c[c['type'] == 'death']['cases'].values[0],
+                                    'recovered': c[c['type'] == 'recovered']['cases'].values[0],
+                                    'cumul confirmed': rsum[0], 'cumul death': rsum[1], 'cumul recovered': rsum[2]
                                    })
             else:
                 rsum = np.zeros(3, dtype=int)  # running sum of the 3 types
@@ -461,7 +461,6 @@ def crosscorr(country: str, normalized:True, ndf:pnd.DataFrame):
 ## PLOTTING
 
 
-
 def timeline_global(df:pnd.DataFrame, cumul=False, kind='bar'):
     assert 'cumul confirmed' in df.columns, f"need a transformed dataset"
     res = []
@@ -478,3 +477,4 @@ def timeline_global(df:pnd.DataFrame, cumul=False, kind='bar'):
         res.plot(x='date', y=['confirmed', 'death', 'cumul confirmed', 'cumul death'], kind=kind)
     else:    
         res.plot(x='date', y=['confirmed', 'death'], kind=kind)
+

@@ -73,10 +73,12 @@ sns.barplot(x="date", y="cumul death", hue="Country", data=ndf[ndf.Country.isin(
 ff.create_table(ndf.query("'France' in Country"))
 
 
-
+####################################
 ## DATA ANALYSIS
 
-focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Italy', 'Iran', 'China', 'Spain', 'Taiwan*', 'Korea, South', 'Singapore', 'Israel', 'Netherlands', 'Nigeria', 'US']
+focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Italy', 'Iran',
+         'China', 'Spain', 'Taiwan*', 'Korea, South', 'Singapore', 'Israel',
+         'Netherlands', 'Nigeria', 'US']
 combinations = itertools.combinations(focus, 2)
 corrcoeff = np.zeros((len(focus), len(focus)))
 pvalues = np.zeros((len(focus), len(focus)))
@@ -86,7 +88,7 @@ for country in focus:
 
 res = pnd.DataFrame(res, columns=focus)
 
-
+####################################
 # Correlation
 for combi in combinations:
     corrcoeff[focus.index(combi[0])][focus.index(combi[1])], pvalues[focus.index(combi[0])][focus.index(combi[1])] = stats.pearsonr(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
@@ -103,9 +105,12 @@ plt.show()
 sns.heatmap(res.cov(), annot=True)
 plt.show()
 
+####################################
 # Cross correlations
 
-focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Iran', 'China', 'Spain', 'Taiwan*', 'Korea, South', 'Singapore', 'Israel', 'Netherlands', 'Nigeria', 'US']
+focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Iran',
+         'China', 'Spain', 'Taiwan*', 'Korea, South', 'Singapore', 'Israel', 'Netherlands',
+         'Nigeria', 'US']
 combinations = itertools.combinations(focus, 2)
 #crosscorr = np.zeros((len(focus), len(focus)))
 #pvalues = np.zeros((len(focus), len(focus)))
