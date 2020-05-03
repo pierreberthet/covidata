@@ -134,3 +134,15 @@ con, death, reco = crosscorr(reference, True, ndf)
 m = con.max()
 m.sort_values()[-10:].index.tolist()
 con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} confirmed")
+
+
+
+################
+################
+####  TODO  ####
+'''
+* finish import jupyter notebooks
+
+* get total population by country (wikipedia crawler?)
+* get previous years death counts, bad flu years (what are the bad flu years?)
+'''
