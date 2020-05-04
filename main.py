@@ -21,7 +21,7 @@ import scipy.stats as stats
 import itertools
 
 
-from dataform import *
+from coronapy.dataform import *
 
 #%config InlineBackend.figure_format ='retina'
 #%matplotlib inline
@@ -38,7 +38,7 @@ assert os.path.isfile(fcsv), f"{fcsv} does not exist in {os.getcwd()}"
 
 
 df = pnd.read_csv(fcsv)
-print(f"loading JHH data, cleaning and reformating dataset")
+print(f"loading John Hopkins University of Medecine data, cleaning and reformating dataset")
 ndf = transform_metro(df)
 
 ddf = ndf.copy()
@@ -119,14 +119,14 @@ for country in focus:
     res[country] = (ndf.query("@country in Country").confirmed.values)
 
 res = pnd.DataFrame(res, columns=focus)
-crosscorr = {}
+crosscorr_df = {}
 for combi in combinations:
-    crosscorr[combi] =  spsig.correlate(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
+    crosscorr_df[combi] =  spsig.correlate(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
 
-crosscorr = pnd.DataFrame(crosscorr)
+crosscorr_df = pnd.DataFrame(crosscorr_df)
 
 plt.plot(spsig.correlate(ndf.query("'France' in Country").death / ndf.query("'France' in Country").death.max(),
-                ndf.query("'Italy' in Country").death / ndf.query("'Italy' in Country").death.max()))
+                         ndf.query("'Italy' in Country").death / ndf.query("'Italy' in Country").death.max()))
 
 
 reference = 'France'
@@ -141,6 +141,8 @@ con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation
 ################
 ####  TODO  ####
 '''
+* update import to name instead of *
+* load dataset once, then only run analysis
 * finish import jupyter notebooks
 
 * get total population by country (wikipedia crawler?)
