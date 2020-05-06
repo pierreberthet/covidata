@@ -147,4 +147,13 @@ con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation
 
 * get total population by country (wikipedia crawler?)
 * get previous years death counts, bad flu years (what are the bad flu years?)
+* get GDP, density of country and plot death / cases
+* plot by continents
+* compute recovery time from recovered data?
+
+correlation with:
+* air quality
+* industrial indicators
+* UN rank
+* 
 '''
