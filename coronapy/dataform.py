@@ -8,6 +8,7 @@ from shapely import wkt
 from shapely.geometry import Point
 
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from datetime import timedelta, date
 import numpy as np
 import plotly.express as px
@@ -343,7 +344,7 @@ def test_transformed_df(df:pnd.DataFrame) -> dict:
     return res
 
 
-def transform_debug(df:pnd.DataFrame) -> pnd.DataFrame:
+def transform_debug(df: pnd.DataFrame) -> pnd.DataFrame:
     #ndf = pnd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
     res = []
     #df = df.fillna('Metro')
@@ -363,14 +364,15 @@ def transform_debug(df:pnd.DataFrame) -> pnd.DataFrame:
                     for date in ttdf['date'].unique():
                         c = ttdf[ttdf['date'] == date]
                         print('--------')
-                        print(c[c['type']=='confirmed']['cases'].values)
-                        rsum[0] += c[c['type']=='confirmed']['cases'].values[0]
-                        rsum[1] += c[c['type']=='death']['cases'].values[0]
-                        res.append({'Country':country, 'Province':province, 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
-                                    'confirmed':c[c['type']=='confirmed']['cases'].values[0],
-                                    'death':c[c['type']=='death']['cases'].values[0],
-                                    'cumul confirmed':rsum[0], 'cumul death':rsum[1]
-                                   })
+                        print(c[c['type'] == 'confirmed']['cases'].values)
+                        rsum[0] += c[c['type'] == 'confirmed']['cases'].values[0]
+                        rsum[1] += c[c['type'] == 'death']['cases'].values[0]
+                        res.append({'Country': country, 'Province': province, 'Lat': c.iloc[0]['Lat'],
+                                    'Long': c.iloc[0]['Long'], 'date': date,
+                                    'confirmed': c[c['type'] == 'confirmed']['cases'].values[0],
+                                    'death': c[c['type'] == 'death']['cases'].values[0],
+                                    'cumul confirmed': rsum[0], 'cumul death': rsum[1]
+                                    })
         else:
             rsum = np.zeros(2, dtype=int)  # running sum of the 3 types
             i = 1
@@ -387,7 +389,7 @@ def transform_debug(df:pnd.DataFrame) -> pnd.DataFrame:
 
 
 
-def get_Xworst_Ydays(df:pnd.DataFrame, ncountries:int, days:int) -> pnd.DataFrame:
+def get_Xworst_Ydays(df: pnd.DataFrame, ncountries: int, days: int) -> pnd.DataFrame:
     if ncountries is None:
         ncountries = 10
     if days is None:
@@ -426,7 +428,7 @@ def print_list_provinces(df: pnd.DataFrame):
 
 
 
-def crosscorr(country: str, normalized:True, ndf:pnd.DataFrame):
+def crosscorr(country: str, normalized: True, ndf: pnd.DataFrame):
     '''plot the 10 'best' pairwise cross correlations with the 
     country specified on the mode type provided: ['confirmed', 'death', 'recovered']'''
     cc_recovered = {}
@@ -461,7 +463,7 @@ def crosscorr(country: str, normalized:True, ndf:pnd.DataFrame):
 ## PLOTTING
 
 
-def timeline_global(df:pnd.DataFrame, cumul=False, kind='bar'):
+def timeline_global(df: pnd.DataFrame, cumul=False, kind='bar'):
     assert 'cumul confirmed' in df.columns, f"need a transformed dataset"
     res = []
     conf = 0
@@ -478,3 +480,30 @@ def timeline_global(df:pnd.DataFrame, cumul=False, kind='bar'):
     else:    
         res.plot(x='date', y=['confirmed', 'death'], kind=kind)
 
+
+def plot_3dimensions(df: pnd.DataFrame, country_list=None):
+    if country_list is None:
+        country_list = df.Country.unique()
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    for country in country_list:
+        ax.scatter3D(df[df['Country'] == country].iloc[-1]['cumul confirmed'],
+                     df[df['Country'] == country].iloc[-1]['cumul death'],
+                     df[df['Country'] == country].iloc[-1]['cumul recovered'])
+    return ax
+
+
+def plot_cumul_death_confirmed(df: pnd.DataFrame, country_list=None):
+    if country_list is None:
+        country_list = df.Country.unique()
+    # fig = go.Figure()
+    # for country in country_list:
+    #     fig.add_trace(go.Scatter(x=df[df['Country'] == country].iloc[-1]['cumul confirmed'],
+    #                              y=df[df['Country'] == country].iloc[-1]['cumul death'],
+    #                              mode='markers', name=country))
+
+    fig = px.scatter(df.query('@country_list in Country and @df.date.max() in date'))
+                     #x="cumul confirmed", y="cumul death",)
+                     #color="Country",
+                     #size='cumul recovered', hover_data=['Country'])
+    return fig

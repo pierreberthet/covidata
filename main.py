@@ -91,19 +91,19 @@ res = pnd.DataFrame(res, columns=focus)
 
 ####################################
 # Correlation
-for combi in combinations:
-    corrcoeff[focus.index(combi[0])][focus.index(combi[1])], pvalues[focus.index(combi[0])][focus.index(combi[1])] = stats.pearsonr(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
+# for combi in combinations:
+#     corrcoeff[focus.index(combi[0])][focus.index(combi[1])], pvalues[focus.index(combi[0])][focus.index(combi[1])] = stats.pearsonr(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
 
-corrcoeff = np.triu(corrcoeff) + np.triu(corrcoeff,1).T
-np.fill_diagonal(corrcoeff, 1)
-pvalues = np.triu(pvalues) + np.triu(pvalues,1).T
-np.fill_diagonal(pvalues, 1)
+# corrcoeff = np.triu(corrcoeff) + np.triu(corrcoeff,1).T
+# np.fill_diagonal(corrcoeff, 1)
+# pvalues = np.triu(pvalues) + np.triu(pvalues,1).T
+# np.fill_diagonal(pvalues, 1)
 
-sns.heatmap(corrcoeff, xticklabels=focus, yticklabels=focus, annot=True)
+#sns.heatmap(corrcoeff, xticklabels=focus, yticklabels=focus, annot=True)
+sns.heatmap(res.corr(), annot=True).set_title('Correlations')
 plt.show()
-sns.heatmap(res.corr(), annot=True)
-plt.show()
-sns.heatmap(res.cov(), annot=True)
+# Covariance, not Correct?
+sns.heatmap(res.cov()).set_title('Covariances')
 plt.show()
 
 ####################################
@@ -136,12 +136,15 @@ m = con.max()
 m.sort_values()[-10:].index.tolist()
 con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} confirmed")
 
-
+plt.show()
 
 ################
 ################
 ####  TODO  ####
 '''
+
+* broken: plotly display figures (should display on a new browser page)
+
 * update import to name instead of *
 * load dataset once, then only run analysis
 * finish import jupyter notebooks
