@@ -33,7 +33,8 @@ def toGeoDF(df, geometry="geog"):
     return gpd.GeoDataFrame(tempDF, geometry=geometry)
 
 cwd = os.getcwd()
-fcsv = '../coronavirus-csv/coronavirus_dataset.csv'
+#fcsv = '../coronavirus-csv/coronavirus_dataset.csv'
+fcsv = '../coronavirus/csv/coronavirus.csv'
 assert os.path.isfile(fcsv), f"{fcsv} does not exist in {os.getcwd()}"
 
 
