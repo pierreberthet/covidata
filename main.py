@@ -145,6 +145,7 @@ plt.show()
 
 * broken: plotly display figures (should display on a new browser page)
 
+* mutual information
 * update import to name instead of *
 * load dataset once, then only run analysis
 * finish import jupyter notebooks
