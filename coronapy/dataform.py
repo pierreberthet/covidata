@@ -107,8 +107,8 @@ def add_running_sum(df) -> pnd.DataFrame:
                                                          
 def global_running_sum(df) -> pnd.DataFrame:
     for country in get_all_countries(df):
-        if has_province(df[df['Country.Region'] == country]):
-            for province in get_provinces(df[df['Country.Region'] == country]):
+        if has_province(df[df['country'] == country]):
+            for province in get_provinces(df[df['country'] == country]):
                 pass
     return None
                                                          
@@ -131,16 +131,16 @@ def transform_metro(df:pnd.DataFrame) -> pnd.DataFrame:
     the cumulative data from the provinces.'''
     #ndf = pnd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
     res = []
-    for country in tqdm(df['Country.Region'].unique().tolist()):
-        tdf = df[df['Country.Region'] == country].fillna(country)
+    for country in tqdm(df['country'].unique().tolist()):
+        tdf = df[df['country'] == country].fillna(country)
         if country != 'Canada':  ## Canada does not have 'recovered' data, special case below.
-            if len(tdf['Province.State'].unique()) > 1:
+            if len(tdf['province'].unique()) > 1:
                 if country in ['China', 'Australia']:
                     rsum = np.zeros(3, dtype=int)  # running sum of the 3 types
                     for date in tdf['date'].unique():
                         dsum = np.zeros(3, dtype=int)
-                        for province in tdf['Province.State'].unique().tolist():
-                            ttdf = tdf[tdf['Province.State'] == province]
+                        for province in tdf['province'].unique().tolist():
+                            ttdf = tdf[tdf['province'] == province]
                             if province != country and 'Princess' not in province:
                                 c = ttdf[ttdf['date'] == date]
                                 dsum[0] += c[c['type']=='confirmed']['cases'].values[0]
@@ -149,7 +149,7 @@ def transform_metro(df:pnd.DataFrame) -> pnd.DataFrame:
                         rsum[0] += dsum[0]
                         rsum[1] += dsum[1]
                         rsum[2] += dsum[2]
-                        res.append({'Country':country, 'Province': 'mainland', 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
+                        res.append({'Country':country, 'Province': 'mainland', 'lat':c.iloc[0]['lat'], 'long':c.iloc[0]['long'], 'date':date,
                                     'confirmed':dsum[0],
                                     'death':dsum[1],
                                     'recovered':dsum[2],
@@ -160,7 +160,7 @@ def transform_metro(df:pnd.DataFrame) -> pnd.DataFrame:
                     rsum = np.zeros(3, dtype=int)  # running sum of the 3 types
                     for date in tdf['date'].unique():
                         dsum = np.zeros(3, dtype=int)
-                        ttdf = tdf[tdf['Province.State'] == country]
+                        ttdf = tdf[tdf['province'] == country]
                         c = ttdf[ttdf['date'] == date]
                         dsum[0] = c[c['type']=='confirmed']['cases'].values[0]
                         dsum[1] = c[c['type']=='death']['cases'].values[0]
@@ -168,7 +168,7 @@ def transform_metro(df:pnd.DataFrame) -> pnd.DataFrame:
                         rsum[0] += dsum[0]
                         rsum[1] += dsum[1]
                         rsum[2] += dsum[2]
-                        res.append({'Country':country, 'Province': 'mainland', 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
+                        res.append({'Country':country, 'Province': 'mainland', 'lat':c.iloc[0]['lat'], 'long':c.iloc[0]['long'], 'date':date,
                                     'confirmed':dsum[0],
                                     'death':dsum[1],
                                     'recovered':dsum[2],
@@ -181,22 +181,22 @@ def transform_metro(df:pnd.DataFrame) -> pnd.DataFrame:
                     rsum[0] += c[c['type']=='confirmed']['cases'].values[0]
                     rsum[1] += c[c['type']=='death']['cases'].values[0]
                     rsum[2] += c[c['type']=='recovered']['cases'].values[0]
-                    res.append({'Country':country, 'Province':None, 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
+                    res.append({'Country':country, 'Province':None, 'lat':c.iloc[0]['lat'], 'long':c.iloc[0]['long'], 'date':date,
                                 'confirmed':c[c['type']=='confirmed']['cases'].values[0],
                                 'death':c[c['type']=='death']['cases'].values[0],
                                 'recovered':c[c['type']=='recovered']['cases'].values[0],
                                 'cumul confirmed':rsum[0], 'cumul death':rsum[1], 'cumul recovered':rsum[2]
                                  })
         else: # Canada specific
-            #for province in tdf['Province.State'].unique().tolist():
+            #for province in tdf['province'].unique().tolist():
                 #if province != 'Canada':
-            drecov = tdf[tdf['Province.State'] == 'Canada']
+            drecov = tdf[tdf['province'] == 'Canada']
             rsum = np.zeros(3, dtype=int)  # running sum of the 3 types
             for date in tdf['date'].unique():
                 dsum = np.zeros(3, dtype=int)
-                for province in tdf['Province.State'].unique().tolist():
+                for province in tdf['province'].unique().tolist():
                     if province != country and 'Princess' not in province:
-                        ttdf = tdf[tdf['Province.State'] == province]
+                        ttdf = tdf[tdf['province'] == province]
                         c = ttdf[ttdf['date'] == date]
                         dsum[0] += c[c['type']=='confirmed']['cases'].values[0]
                         dsum[1] += c[c['type']=='death']['cases'].values[0]
@@ -204,7 +204,7 @@ def transform_metro(df:pnd.DataFrame) -> pnd.DataFrame:
                 rsum[0] += dsum[0]
                 rsum[1] += dsum[1]
                 rsum[2] += dsum[2]
-                res.append({'Country':country, 'Province': 'mainland', 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
+                res.append({'Country':country, 'Province': 'mainland', 'lat':c.iloc[0]['lat'], 'long':c.iloc[0]['long'], 'date':date,
                             'confirmed':dsum[0],
                             'death':dsum[1],
                             'recovered':dsum[2],
@@ -215,12 +215,12 @@ def transform_metro(df:pnd.DataFrame) -> pnd.DataFrame:
 def transform(df:pnd.DataFrame) -> pnd.DataFrame:
     #ndf = pnd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
     res = []
-    for country in df['Country.Region'].unique().tolist():
-        tdf = df[df['Country.Region'] == country].fillna(country)
+    for country in df['country'].unique().tolist():
+        tdf = df[df['country'] == country].fillna(country)
         if country != 'Canada':  ## Canada does not have 'recovered' data, special case below.
-            if len(tdf['Province.State'].unique()) > 1:
-                for province in tdf['Province.State'].unique().tolist():
-                    ttdf = tdf[tdf['Province.State'] == province]
+            if len(tdf['province'].unique()) > 1:
+                for province in tdf['province'].unique().tolist():
+                    ttdf = tdf[tdf['province'] == province]
                     rsum = np.zeros(3, dtype=int)  # running sum of the 3 types
                     i = 1
                     for date in ttdf['date'].unique():
@@ -228,7 +228,7 @@ def transform(df:pnd.DataFrame) -> pnd.DataFrame:
                         rsum[0] += c[c['type']=='confirmed']['cases'].values[0]
                         rsum[1] += c[c['type']=='death']['cases'].values[0]
                         rsum[2] += c[c['type']=='recovered']['cases'].values[0]
-                        res.append({'Country': country, 'Province':province, 'Lat': c.iloc[0]['Lat'], 'Long': c.iloc[0]['Long'], 'date':date,
+                        res.append({'Country': country, 'Province':province, 'lat': c.iloc[0]['lat'], 'long': c.iloc[0]['long'], 'date':date,
                                     'confirmed': c[c['type'] == 'confirmed']['cases'].values[0],
                                     'death': c[c['type'] == 'death']['cases'].values[0],
                                     'recovered': c[c['type'] == 'recovered']['cases'].values[0],
@@ -242,23 +242,23 @@ def transform(df:pnd.DataFrame) -> pnd.DataFrame:
                     rsum[0] += c[c['type']=='confirmed']['cases'].values[0]
                     rsum[1] += c[c['type']=='death']['cases'].values[0]
                     rsum[2] += c[c['type']=='recovered']['cases'].values[0]
-                    res.append({'Country':country, 'Province':None, 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
+                    res.append({'Country':country, 'Province':None, 'lat':c.iloc[0]['lat'], 'long':c.iloc[0]['long'], 'date':date,
                                 'confirmed':c[c['type']=='confirmed']['cases'].values[0],
                                 'death':c[c['type']=='death']['cases'].values[0],
                                 'recovered':c[c['type']=='recovered']['cases'].values[0],
                                 'cumul confirmed':rsum[0], 'cumul death':rsum[1], 'cumul recovered':rsum[2]
                                  })
         else:
-            for province in tdf['Province.State'].unique().tolist():
+            for province in tdf['province'].unique().tolist():
                 if province != 'Canada':
-                    ttdf = tdf[tdf['Province.State'] == province]
+                    ttdf = tdf[tdf['province'] == province]
                     rsum = np.zeros(2, dtype=int)  # running sum of the 2 types for 'Canada'
                     i = 1
                     for date in ttdf['date'].unique():
                         c = ttdf[ttdf['date'] == date]
                         rsum[0] += c[c['type']=='confirmed']['cases'].values[0]
                         rsum[1] += c[c['type']=='death']['cases'].values[0]
-                        res.append({'Country':country, 'Province':province, 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
+                        res.append({'Country':country, 'Province':province, 'lat':c.iloc[0]['lat'], 'long':c.iloc[0]['long'], 'date':date,
                                     'confirmed':c[c['type']=='confirmed']['cases'].values[0],
                                     'death':c[c['type']=='death']['cases'].values[0],
                                     'cumul confirmed':rsum[0], 'cumul death':rsum[1],
@@ -290,20 +290,20 @@ def add_running_sum2(df) -> pnd.DataFrame:
 
 def test_raw_df(df:pnd.DataFrame) -> dict:
     res = {'recovered': True, 'confirmed': True, 'death': True, 'date': True, 'positive': True}
-    for country in df['Country.Region'].unique():
-        c = df[df['Country.Region'] == country]
-        if len(c['Province.State'].unique()) > 1:
-            for province in c['Province.State'].unique():
-                if 'recovered' not in c[c['Province.State'] == province].type.tolist():
+    for country in df['country'].unique():
+        c = df[df['country'] == country]
+        if len(c['province'].unique()) > 1:
+            for province in c['province'].unique():
+                if 'recovered' not in c[c['province'] == province].type.tolist():
                     res['recovered'] = False
                     print(f"{country} {province} does not have recovered entries")                
-                if 'confirmed' not in c[c['Province.State'] == province].type.tolist():
+                if 'confirmed' not in c[c['province'] == province].type.tolist():
                     res['confirmed'] = False
                     print(f"{country} {province} does not have confirmed entries")
-                if 'death' not in c[c['Province.State'] == province].type.tolist():
+                if 'death' not in c[c['province'] == province].type.tolist():
                     res['death'] = False
                     print(f"{country} {province} does not have death entries")
-                elif np.min(c[c['Province.State'] == province].query("'death' in type").cases) < 0:
+                elif np.min(c[c['province'] == province].query("'death' in type").cases) < 0:
                     print(f"{country} {province} has a negative death entry")
                     res['positive'] = False
     
@@ -326,20 +326,20 @@ def test_raw_df(df:pnd.DataFrame) -> dict:
 
 def test_transformed_df(df:pnd.DataFrame) -> dict:
     res = {'recovered': True, 'confirmed': True, 'death': True, 'date': True, 'positive': True}
-    for country in df['Country.Region'].unique():
-        c = df[df['Country.Region'] == country]
-        for province in c['Province.State'].unique():
-            if 'recovered' not in c[c['Province.State'] == province].type:
+    for country in df['country'].unique():
+        c = df[df['country'] == country]
+        for province in c['province'].unique():
+            if 'recovered' not in c[c['province'] == province].type:
                 res['recovered'] = False
                 print(f"{country} {province} does not have recovered entries")                
-            if 'confirmed' not in c[c['Province.State'] == province].type:
+            if 'confirmed' not in c[c['province'] == province].type:
                 res['confirmed'] = False
                 print(f"{country} {province} does not have confirmed entries")
-            if 'death' not in c[c['Province.State'] == province].type:
+            if 'death' not in c[c['province'] == province].type:
                 res['death'] = False
                 print(f"{country} {province} does not have death entries")
                 
-            if np.min(c[c['Province.State'] == province].cases) < 0:
+            if np.min(c[c['province'] == province].cases) < 0:
                 print(f"{country} {province} has a negative value case")
     return res
 
@@ -349,16 +349,16 @@ def transform_debug(df: pnd.DataFrame) -> pnd.DataFrame:
     res = []
     #df = df.fillna('Metro')
     
-    #df = df.drop(df['Province.State']=='Recovered')
+    #df = df.drop(df['province']=='Recovered')
     #df = remove_Princess(df)
-    for country in df['Country.Region'].unique().tolist():
+    for country in df['country'].unique().tolist():
         print(country)
-        tdf = df[df['Country.Region'] == country].fillna(country)
-        if len(tdf['Province.State'].unique()) > 1:
-            for province in tdf['Province.State'].unique().tolist():
+        tdf = df[df['country'] == country].fillna(country)
+        if len(tdf['province'].unique()) > 1:
+            for province in tdf['province'].unique().tolist():
                 if province != 'Canada':  # Canada has provinces, and a generic entry with only recovered cases.
                     print(province)
-                    ttdf = tdf[tdf['Province.State'] == province]
+                    ttdf = tdf[tdf['province'] == province]
                     rsum = np.zeros(2, dtype=int)  # running sum of the 3 types
                     i = 1
                     for date in ttdf['date'].unique():
@@ -367,8 +367,8 @@ def transform_debug(df: pnd.DataFrame) -> pnd.DataFrame:
                         print(c[c['type'] == 'confirmed']['cases'].values)
                         rsum[0] += c[c['type'] == 'confirmed']['cases'].values[0]
                         rsum[1] += c[c['type'] == 'death']['cases'].values[0]
-                        res.append({'Country': country, 'Province': province, 'Lat': c.iloc[0]['Lat'],
-                                    'Long': c.iloc[0]['Long'], 'date': date,
+                        res.append({'Country': country, 'Province': province, 'lat': c.iloc[0]['lat'],
+                                    'long': c.iloc[0]['long'], 'date': date,
                                     'confirmed': c[c['type'] == 'confirmed']['cases'].values[0],
                                     'death': c[c['type'] == 'death']['cases'].values[0],
                                     'cumul confirmed': rsum[0], 'cumul death': rsum[1]
@@ -380,7 +380,7 @@ def transform_debug(df: pnd.DataFrame) -> pnd.DataFrame:
                 c = tdf[tdf['date'] == date]
                 rsum[0] += c[c['type']=='confirmed']['cases'].values[0]
                 rsum[1] += c[c['type']=='death']['cases'].values[0]
-                res.append({'Country':country, 'Province':None, 'Lat':c.iloc[0]['Lat'], 'Long':c.iloc[0]['Long'], 'date':date,
+                res.append({'Country':country, 'Province':None, 'lat':c.iloc[0]['lat'], 'long':c.iloc[0]['long'], 'date':date,
                             'confirmed':c[c['type']=='confirmed']['cases'].values[0],
                             'death':c[c['type']=='death']['cases'].values[0],
                             'cumul confirmed':rsum[0], 'cumul death':rsum[1]
