@@ -68,8 +68,10 @@ focusdf = global_description(ndf, focus_countries)
 focusdf.sort_values(by='new deaths')
 
 
-sns.barplot(x="date", y="cumul death", hue="Country", data=ndf[ndf.Country.isin(worstdf.Country[-10:])])
+worst_plot = sns.barplot(x="date", y="cumul death", hue="Country", data=ndf[ndf.Country.isin(worstdf.Country[-10:])])
+worst_plot.set_xticklabels(worst_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
 
+plt.show()
 
 ff.create_table(ndf.query("'France' in Country"))
 
@@ -91,16 +93,18 @@ res = pnd.DataFrame(res, columns=focus)
 
 ####################################
 # Correlation
-# for combi in combinations:
-#     corrcoeff[focus.index(combi[0])][focus.index(combi[1])], pvalues[focus.index(combi[0])][focus.index(combi[1])] = stats.pearsonr(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
+for combi in combinations:
+    corrcoeff[focus.index(combi[0])][focus.index(combi[1])], pvalues[focus.index(combi[0])][focus.index(combi[1])] = stats.pearsonr(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
 
-# corrcoeff = np.triu(corrcoeff) + np.triu(corrcoeff,1).T
-# np.fill_diagonal(corrcoeff, 1)
-# pvalues = np.triu(pvalues) + np.triu(pvalues,1).T
-# np.fill_diagonal(pvalues, 1)
+corrcoeff = np.triu(corrcoeff) + np.triu(corrcoeff,1).T
+np.fill_diagonal(corrcoeff, 1)
+pvalues = np.triu(pvalues) + np.triu(pvalues,1).T
+np.fill_diagonal(pvalues, 1)
 
-#sns.heatmap(corrcoeff, xticklabels=focus, yticklabels=focus, annot=True)
-sns.heatmap(res.corr(), annot=True).set_title('Correlations')
+corrcf_plot = sns.heatmap(corrcoeff, xticklabels=focus, yticklabels=focus, annot=True)
+corrcf_plot.set_xticklabels(corrcf_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
+
+#sns.heatmap(res.corr(), annot=True).set_title('Correlations')
 plt.show()
 # Covariance, not Correct?
 sns.heatmap(res.cov()).set_title('Covariances')
@@ -130,7 +134,7 @@ plt.plot(spsig.correlate(ndf.query("'France' in Country").death / ndf.query("'Fr
                          ndf.query("'Italy' in Country").death / ndf.query("'Italy' in Country").death.max()))
 
 
-reference = 'France'
+reference = 'Norway'
 con, death, reco = crosscorr(reference, True, ndf)
 m = con.max()
 m.sort_values()[-10:].index.tolist()

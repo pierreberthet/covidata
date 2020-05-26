@@ -502,8 +502,8 @@ def plot_cumul_death_confirmed(df: pnd.DataFrame, country_list=None):
     #                              y=df[df['Country'] == country].iloc[-1]['cumul death'],
     #                              mode='markers', name=country))
 
-    fig = px.scatter(df.query('@country_list in Country and @df.date.max() in date'))
-                     #x="cumul confirmed", y="cumul death",)
-                     #color="Country",
-                     #size='cumul recovered', hover_data=['Country'])
+    fig = px.scatter(df.query('@country_list in Country and @df.date.max() in date'),
+                     x="cumul confirmed", y="cumul death",
+                     color="Country",
+                     size='cumul recovered', hover_data=['Country'])
     return fig

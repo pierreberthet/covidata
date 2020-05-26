@@ -21,4 +21,5 @@ ongoing development
 
 ## Sources
 * John Hopkins University Center for Systems Science and Engineering [(JHU CSSE)](https://github.com/CSSEGISandData/COVID-19)
-* .csv dataset from [here](https://github.com/RamiKrispin/coronavirus)
+* .csv covid dataset from [here](https://github.com/RamiKrispin/coronavirus)
+* .csv population and age distribution metrics from [United Nations](https://data.un.org/)
