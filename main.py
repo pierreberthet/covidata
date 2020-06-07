@@ -107,7 +107,10 @@ corrcf_plot.set_xticklabels(corrcf_plot.get_xticklabels(), rotation=45, horizont
 #sns.heatmap(res.corr(), annot=True).set_title('Correlations')
 plt.show()
 # Covariance, not Correct?
-sns.heatmap(res.cov()).set_title('Covariances')
+covariances_plot = sns.heatmap(res.cov())
+covariances_plot.set_title('Covariances')
+covariances_plot.set_xticklabels(covariances_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
+
 plt.show()
 
 ####################################
@@ -142,6 +145,9 @@ con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation
 
 plt.show()
 
+
+undata = pnd.read_csv('external_data/UNData_Population, Surface Area and Density.csv', encoding='ISO-8859-1')
+
 ################
 ################
 ####  TODO  ####
@@ -153,6 +159,7 @@ plt.show()
 * update import to name instead of *
 * load dataset once, then only run analysis
 * finish import jupyter notebooks
+* rename columns addtional dataset (demographics)
 
 * get total population by country (wikipedia crawler?)
 * get previous years death counts, bad flu years (what are the bad flu years?)
