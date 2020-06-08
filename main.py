@@ -146,7 +146,13 @@ con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation
 plt.show()
 
 
-undata = pnd.read_csv('external_data/UNData_Population, Surface Area and Density.csv', encoding='ISO-8859-1')
+undf = pnd.read_csv('external_data/UNData_Population, Surface Area and Density.csv', encoding='ISO-8859-1')
+undf.rename(columns={'Unnamed 3':'series'}) 
+undf.rename(columns={'Unnamed 4':'values'}) 
+undf.rename(columns={'Population, density and surface area':'countries':'countries'}) 
+#undf.rename(columns={'Unnamed 4':'values'})
+
+# compute and assess per capita results with some wikipedia entries.
 
 ################
 ################
@@ -166,6 +172,8 @@ undata = pnd.read_csv('external_data/UNData_Population, Surface Area and Density
 * get GDP, density of country and plot death / cases
 * plot by continents
 * compute recovery time from recovered data?
+
+* GIS
 
 correlation with:
 * air quality
