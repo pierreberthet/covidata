@@ -20,6 +20,7 @@ import scipy.signal as spsig
 import scipy.stats as stats
 import itertools
 
+from sklearn.cross_decomposition import PLSCanonical, PLSRegression, CCA
 
 from coronapy.dataform import *
 
@@ -40,7 +41,7 @@ assert os.path.isfile(fcsv), f"{fcsv} does not exist in {os.getcwd()}"
 
 df = pnd.read_csv(fcsv)
 print(f"loading John Hopkins University of Medecine data, cleaning and reformating dataset")
-ndf = transform_metro(df)
+ndf, error   = transform_metro(df)
 
 ddf = ndf.copy()
 
@@ -103,6 +104,7 @@ np.fill_diagonal(pvalues, 1)
 
 corrcf_plot = sns.heatmap(corrcoeff, xticklabels=focus, yticklabels=focus, annot=True)
 corrcf_plot.set_xticklabels(corrcf_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
+corrcf_plot.set_title('Correlations')
 
 #sns.heatmap(res.corr(), annot=True).set_title('Correlations')
 plt.show()
@@ -142,14 +144,16 @@ con, death, reco = crosscorr(reference, True, ndf)
 m = con.max()
 m.sort_values()[-10:].index.tolist()
 con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} confirmed")
-
+death[death.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} death")
+reco[reco.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} recovered")
 plt.show()
+
 
 
 undf = pnd.read_csv('external_data/UNData_Population, Surface Area and Density.csv', encoding='ISO-8859-1')
 undf.rename(columns={'Unnamed 3':'series'}) 
 undf.rename(columns={'Unnamed 4':'values'}) 
-undf.rename(columns={'Population, density and surface area':'countries':'countries'}) 
+undf.rename(columns={'Population, density and surface area':'countries'}) 
 #undf.rename(columns={'Unnamed 4':'values'})
 
 # compute and assess per capita results with some wikipedia entries.
@@ -162,6 +166,8 @@ undf.rename(columns={'Population, density and surface area':'countries':'countri
 * broken: plotly display figures (should display on a new browser page)
 
 * mutual information
+* CCA canonical correlation analysis: canonical-correlation analysis will find linear combinations of X and Y which have maximum correlation with each other (wikipedia)
+** scikit-learn cross decomposition, split training / test data
 * update import to name instead of *
 * load dataset once, then only run analysis
 * finish import jupyter notebooks
@@ -179,5 +185,6 @@ correlation with:
 * air quality
 * industrial indicators
 * UN rank
+* datasets: WID, Humanitarian Data Exchange
 * 
 '''
