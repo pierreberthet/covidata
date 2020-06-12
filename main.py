@@ -16,6 +16,8 @@ import plotly.figure_factory as ff
 import argparse
 import os
 
+import difflib
+
 import scipy.signal as spsig
 import scipy.stats as stats
 import itertools
@@ -24,8 +26,8 @@ from sklearn.cross_decomposition import PLSCanonical, PLSRegression, CCA
 
 from coronapy.dataform import *
 
-#%config InlineBackend.figure_format ='retina'
-#%matplotlib inline
+# %config InlineBackend.figure_format ='retina'
+# %matplotlib inline
 plt.rcParams['figure.figsize'] = [20, 13]
 
 def toGeoDF(df, geometry="geog"):
@@ -33,19 +35,18 @@ def toGeoDF(df, geometry="geog"):
     tempDF[geometry] = df[geometry].apply(wkt.loads)
     return gpd.GeoDataFrame(tempDF, geometry=geometry)
 
+
 cwd = os.getcwd()
-#fcsv = '../coronavirus-csv/coronavirus_dataset.csv'
+# fcsv = '../coronavirus-csv/coronavirus_dataset.csv'
 fcsv = '../coronavirus/csv/coronavirus.csv'
 assert os.path.isfile(fcsv), f"{fcsv} does not exist in {os.getcwd()}"
 
 
 df = pnd.read_csv(fcsv)
 print(f"loading John Hopkins University of Medecine data, cleaning and reformating dataset")
-ndf, error   = transform_metro(df)
+ndf, error = transform_metro(df)
 
 ddf = ndf.copy()
-
-
 
 ndf.confirmed.plot()
 
@@ -78,7 +79,7 @@ ff.create_table(ndf.query("'France' in Country"))
 
 
 ####################################
-## DATA ANALYSIS
+# # DATA ANALYSIS
 
 focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Italy', 'Iran',
          'China', 'Spain', 'Taiwan*', 'Korea, South', 'Singapore', 'Israel',
@@ -97,9 +98,9 @@ res = pnd.DataFrame(res, columns=focus)
 for combi in combinations:
     corrcoeff[focus.index(combi[0])][focus.index(combi[1])], pvalues[focus.index(combi[0])][focus.index(combi[1])] = stats.pearsonr(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
 
-corrcoeff = np.triu(corrcoeff) + np.triu(corrcoeff,1).T
+corrcoeff = np.triu(corrcoeff) + np.triu(corrcoeff, 1).T
 np.fill_diagonal(corrcoeff, 1)
-pvalues = np.triu(pvalues) + np.triu(pvalues,1).T
+pvalues = np.triu(pvalues) + np.triu(pvalues, 1).T
 np.fill_diagonal(pvalues, 1)
 
 corrcf_plot = sns.heatmap(corrcoeff, xticklabels=focus, yticklabels=focus, annot=True)
@@ -122,8 +123,8 @@ focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Ir
          'China', 'Spain', 'Taiwan*', 'Korea, South', 'Singapore', 'Israel', 'Netherlands',
          'Nigeria', 'US']
 combinations = itertools.combinations(focus, 2)
-#crosscorr = np.zeros((len(focus), len(focus)))
-#pvalues = np.zeros((len(focus), len(focus)))
+# crosscorr = np.zeros((len(focus), len(focus)))
+# pvalues = np.zeros((len(focus), len(focus)))
 res = {}
 for country in focus:
     res[country] = (ndf.query("@country in Country").confirmed.values)
@@ -131,7 +132,7 @@ for country in focus:
 res = pnd.DataFrame(res, columns=focus)
 crosscorr_df = {}
 for combi in combinations:
-    crosscorr_df[combi] =  spsig.correlate(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)    
+    crosscorr_df[combi] = spsig.correlate(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)
 
 crosscorr_df = pnd.DataFrame(crosscorr_df)
 
@@ -149,20 +150,79 @@ reco[reco.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlati
 plt.show()
 
 
-
 undf = pnd.read_csv('external_data/UNData_Population, Surface Area and Density.csv', encoding='ISO-8859-1')
-undf.rename(columns={'Unnamed 3':'series'}) 
-undf.rename(columns={'Unnamed 4':'values'}) 
-undf.rename(columns={'Population, density and surface area':'countries'}) 
-#undf.rename(columns={'Unnamed 4':'values'})
+undf.rename(columns={'Unnamed: 3': 'series'}, inplace=True)
+undf.rename(columns={'Unnamed: 4': 'values'}, inplace=True)
+undf.rename(columns={'Unnamed: 6': 'source'}, inplace=True)
+undf.rename(columns={'Unnamed: 5': 'notes'}, inplace=True)
+undf.rename(columns={'Unnamed: 2': 'years'}, inplace=True)
+undf.rename(columns={'Population, density and surface area': 'countries'}, inplace=True)
+undf.rename(columns={'T02': 'area_code'})
+undf.drop([0])  # drop redundant labels row
+
+# Manual correction of the name format between the two dataframe:
+print('Looking for mismatch country name between the UN dataset and the JHU covid dataset')
+mismatched = []
+closest = []
+for c in tqdm(ndf.Country.unique()):
+    if c not in undf.countries.unique():
+        mismatched.append(c)
+        closest.append(difflib.get_close_matches(c, undf.countries.unique()[1:], cutoff=.3))
+
+for i, c in enumerate(mismatched):
+    print(f"{c} not found in UN dataset, closest automatic match: {closest[i]}")
+
+print('Manual Correction')
+undf.loc[undf.countries == 'Bolivia (Plurin. State of)', 'countries'] = 'Bolivia'
+undf.loc[undf.countries == 'Brunei Darussalam', 'countries'] = 'Brunei'
+undf.loc[undf.countries == 'Myanmar', 'countries'] = 'Burma'
+undf.loc[undf.countries == 'Côte d\x92Ivoire', 'countries'] = "Cote d'Ivoire"
+undf.loc[undf.countries == 'Iran (Islamic Republic of)', 'countries'] = 'Iran'
+undf.loc[undf.countries == 'Dem. Rep. of the Congo', 'countries'] = 'Korea, South'
+undf.loc[undf.countries == "Lao People's Dem. Rep.", 'countries'] = 'Laos'
+undf.loc[undf.countries == 'Republic of Moldova', 'countries'] = 'Moldova'
+undf.loc[undf.countries == 'Russian Federation', 'countries'] = 'Russia'
+undf.loc[undf.countries == 'Saint Vincent & Grenadines', 'countries'] = 'Saint Vincent and the Grenadines'
+undf.loc[undf.countries == 'Syrian Arab Republic', 'countries'] = 'Syria'
+undf.loc[undf.countries == 'United Rep. of Tanzania', 'countries'] = 'Tanzania'
+undf.loc[undf.countries == 'United States of America', 'countries'] = 'US'
+undf.loc[undf.countries == 'Venezuela (Boliv. Rep. of)', 'countries'] = 'Venezuela'
+undf.loc[undf.countries == 'State of Palestine', 'countries'] = 'West Bank and Gaza'
+undf.loc[undf.countries == 'Viet Nam', 'countries'] = 'Vietnam'
+
+
+# undf.loc[undf.countries == 'Viet Nam', 'countries'] = 'Taiwan*'
+# China does not include Taiwan  numbers in the UN dataset. However there is no entry fo rTaiwan. DATA MISSING
+# undf.loc[undf.countries == 'Bolivia (Plurin. State of)', 'countries'] = 'Kosovo'
+# Serbia i nUN dataset includes Kosovo numbers
+
+# Fix Congo entries
+# undf.loc[undf.countries == 'Dem. Rep. of the Congo', 'countries'] = 'Congo (Brazzaville)'
+# undf.loc[undf.countries == 'Dem. Rep. of the Congo', 'countries'] = 'Congo (Kinshasa)'
+
+print('Looking for uncorrected mismatch country name between the UN dataset and the JHU covid dataset')
+mismatched = []
+closest = []
+for c in tqdm(ndf.Country.unique()):
+    if c not in undf.countries.unique():
+        mismatched.append(c)
+        closest.append(difflib.get_close_matches(c, undf.countries.unique()[1:], cutoff=.3))
+
+for i, c in enumerate(mismatched):
+    print(f"{c} not found in UN dataset, closest automatic match: {closest[i]}")
+
+
+
+
+# undf.rename(columns={'Unnamed 4':'values'})
 
 # compute and assess per capita results with some wikipedia entries.
 
 ################
 ################
-####  TODO  ####
+# ###  TODO  ####
 '''
-
+* fix multiple congo entries
 * broken: plotly display figures (should display on a new browser page)
 
 * mutual information
