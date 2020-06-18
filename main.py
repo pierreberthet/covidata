@@ -136,9 +136,10 @@ for combi in combinations:
 
 crosscorr_df = pnd.DataFrame(crosscorr_df)
 
-plt.plot(spsig.correlate(ndf.query("'France' in Country").death / ndf.query("'France' in Country").death.max(),
+ax = plt.figure().add_subplot(111)
+ax.plot(spsig.correlate(ndf.query("'France' in Country").death / ndf.query("'France' in Country").death.max(),
                          ndf.query("'Italy' in Country").death / ndf.query("'Italy' in Country").death.max()))
-
+ax.set_title('France Italy correlation death')
 
 reference = 'Norway'
 con, death, reco = crosscorr(reference, True, ndf)
@@ -152,13 +153,13 @@ plt.show()
 
 undf = pnd.read_csv('external_data/UNData_Population, Surface Area and Density.csv', encoding='ISO-8859-1')
 undf.rename(columns={'Unnamed: 3': 'series'}, inplace=True)
-undf.rename(columns={'Unnamed: 4': 'values'}, inplace=True)
+undf.rename(columns={'Unnamed: 4': 'numerics'}, inplace=True)
 undf.rename(columns={'Unnamed: 6': 'source'}, inplace=True)
 undf.rename(columns={'Unnamed: 5': 'notes'}, inplace=True)
 undf.rename(columns={'Unnamed: 2': 'years'}, inplace=True)
 undf.rename(columns={'Population, density and surface area': 'countries'}, inplace=True)
-undf.rename(columns={'T02': 'area_code'})
-undf.drop([0])  # drop redundant labels row
+undf.rename(columns={'T02': 'area_code'}, inplace=True)
+undf.drop([0], inplace=True)  # drop redundant labels row
 
 # Manual correction of the name format between the two dataframe:
 print('Looking for mismatch country name between the UN dataset and the JHU covid dataset')
@@ -214,7 +215,13 @@ for i, c in enumerate(mismatched):
 
 
 
-# undf.rename(columns={'Unnamed 4':'values'})
+focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Iran',
+         'China', 'Spain', 'Korea, South', 'Singapore', 'Israel', 'Netherlands',
+         'Nigeria', 'US']
+
+
+# compute and display the X worst and Y best faring countries in % of pop, and other variables: GDP, % old pop, ...
+
 
 # compute and assess per capita results with some wikipedia entries.
 
@@ -239,6 +246,9 @@ for i, c in enumerate(mismatched):
 * plot by continents
 * compute recovery time from recovered data?
 
+* clustering
+** train on  raw data, then classify per capita data
+
 * GIS
 
 correlation with:
@@ -246,5 +256,7 @@ correlation with:
 * industrial indicators
 * UN rank
 * datasets: WID, Humanitarian Data Exchange
+
+** correlation evolution wrt time 
 * 
 '''

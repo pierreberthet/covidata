@@ -501,6 +501,31 @@ def print_list_provinces(df: pnd.DataFrame):
     return True
 
 
+
+
+# ## UN dataset
+
+def get_latest_data(undf, country, serie):
+    # returns the latest available value for the specified country and serie name.
+    return undf.query("@country in countries and @serie in series").sort_values('years', ascending=True).iloc[-1].numerics
+
+
+def list_series(undf):
+    # returns a list of the available series name
+    return undf.series.unique().tolist()
+
+
+
+
+
+
+
+
+
+
+
+
+
 def crosscorr(country: str, normalized: True, ndf: pnd.DataFrame):
     '''plot the 10 'best' pairwise cross correlations with the 
     country specified on the mode type provided: ['confirmed', 'death', 'recovered']'''
