@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import timedelta, date
 import numpy as np
+from plotly.subplots import make_subplots
 import plotly.express as px
 import plotly.graph_objs as go
 import argparse
@@ -20,6 +21,9 @@ import os
 import scipy.signal as spsig
 import scipy.stats as stats
 import itertools
+
+import plotly.io as pio
+pio.renderers.default = "browser"
 
 
 def country_basic_data(df, country) -> dict:
@@ -490,6 +494,8 @@ def get_Xworst_Ydays(df: pnd.DataFrame, ncountries: int, days: int) -> pnd.DataF
     return pnd.DataFrame(res[-ncountries:])
 
 
+
+
 def print_list_provinces(df: pnd.DataFrame):
     '''Print the provinces for each Country which has provinces listed.
     It can be useful as some countries have provinces that are really not mainland (eg France, UK, Denmark),
@@ -507,7 +513,7 @@ def print_list_provinces(df: pnd.DataFrame):
 
 def get_latest_data(undf, country, serie):
     # returns the latest available value for the specified country and serie name.
-    return undf.query("@country in countries and @serie in series").sort_values('years', ascending=True).iloc[-1].numerics
+    return float(undf.query("@country in countries and @serie in series").sort_values('years', ascending=True).iloc[-1].numerics)
 
 
 def list_series(undf):
@@ -515,12 +521,56 @@ def list_series(undf):
     return undf.series.unique().tolist()
 
 
+def plot_overview_list(df, undf, country_list):
+    series = list_series(undf)
+    fig = make_subplots(rows=len(series), cols=1)
+    for sx, serie in enumerate(series):
+        '''for c in country_list:
+            cur = df.query("@c in Country")
+            latest = get_latest_data(undf, c, serie)'''
+        fig.add_trace(go.Scatter(x=[df.query("@c in Country").iloc[-1]['cumul death'] / get_latest_data(undf, c, serie) for c in country_list],
+                                 y=[df.query("@c in Country").iloc[-1]['cumul confirmed'] / get_latest_data(undf, c, serie) for c in country_list],
+                                 mode='markers', color='country_list'),
+                      row=sx + 1, col=1)
+    fig.show()
+    '''
+    for c in country_list:
+
+    fig.add_trace(
+        go.Scatter(x=[1, 2, 3], y=[4, 5, 6]),
+        row=1, col=1
+    )
+
+    fig.add_trace(
+        go.Scatter(x=[20, 30, 40], y=[50, 60, 70]),
+        row=2, col=1
+    )
+
+    fig.update_layout(height=600, width=800, title_text="Overview")
+    fig.show()
+    '''
+
+def ranked_per_capita():
+    return None
+
+
+def test_per_capita(df, undf, country_list):
+    for serie in list_series(undf):
+        print(f"{serie} *************")
+        for c in country_list:
+            print(c)
+            cur = df.query("@c in Country")
+            latest = get_latest_data(undf, c, serie)
+            print(f"    death {round(cur.iloc[-1]['cumul death'] / latest, 2)}\
+                    cases {round(cur.iloc[-1]['cumul confirmed'] / latest, 2)}")
 
 
 
 
-
-
+fig = px.bar([mini.query("@m in Country").iloc[-1] for m in mini.Country.unique()], x="Country", y="cumul death", 
+                  color='Country', 
+                  height=500) 
+     fig.show() 
 
 
 

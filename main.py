@@ -217,7 +217,23 @@ for i, c in enumerate(mismatched):
 
 focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Iran',
          'China', 'Spain', 'Korea, South', 'Singapore', 'Israel', 'Netherlands',
-         'Nigeria', 'US']
+         'Switzerland', 'US', 'Brazil', 'India', 'Japan']
+
+
+fig = plt.figure()
+
+mini = ddf.query("@focus in Country")  
+
+
+#for c in focus:
+
+for serie in list_series(undf):
+    # 2 plots: confirmed, deaths
+
+    # Do something ofr figures 15 countries
+    for c in focus:
+        # plot
+        get_latest_data(undf, c, serie)
 
 
 # compute and display the X worst and Y best faring countries in % of pop, and other variables: GDP, % old pop, ...
@@ -257,6 +273,5 @@ correlation with:
 * UN rank
 * datasets: WID, Humanitarian Data Exchange
 
-** correlation evolution wrt time 
-* 
+** correlation evolution wrt time  
 '''
