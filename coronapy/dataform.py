@@ -523,32 +523,28 @@ def list_series(undf):
 
 def plot_overview_list(df, undf, country_list):
     series = list_series(undf)
-    fig = make_subplots(rows=len(series), cols=1)
+    fig = make_subplots(rows=len(series), cols=1,
+                        subplot_titles=series)
     for sx, serie in enumerate(series):
         '''for c in country_list:
             cur = df.query("@c in Country")
             latest = get_latest_data(undf, c, serie)'''
-        fig.add_trace(go.Scatter(x=[df.query("@c in Country").iloc[-1]['cumul death'] / get_latest_data(undf, c, serie) for c in country_list],
-                                 y=[df.query("@c in Country").iloc[-1]['cumul confirmed'] / get_latest_data(undf, c, serie) for c in country_list],
-                                 mode='markers', color='country_list'),
-                      row=sx + 1, col=1)
+        fig.add_trace(go.Scatter(x=[df.query("@c in Country").iloc[-1]['cumul death'] / get_latest_data(undf, c, serie)
+                                    for c in country_list],
+                                 y=[df.query("@c in Country").iloc[-1]['cumul confirmed'] / get_latest_data(undf, c, serie)
+                                    for c in country_list],
+                                 mode='markers', marker=dict(), name=serie),
+                      row=sx + 1, col=1,)
+    
+
+    for sx in range(len(series)):
+        fig.update_xaxes(title_text="deaths", row=sx + 1, col=1)
+        fig.update_yaxes(title_text="cases", row=sx + 1, col=1)
+    fig.update_layout(height=5000, width=1000,
+                  title_text="Death / Cases for various metrics")
+
     fig.show()
-    '''
-    for c in country_list:
 
-    fig.add_trace(
-        go.Scatter(x=[1, 2, 3], y=[4, 5, 6]),
-        row=1, col=1
-    )
-
-    fig.add_trace(
-        go.Scatter(x=[20, 30, 40], y=[50, 60, 70]),
-        row=2, col=1
-    )
-
-    fig.update_layout(height=600, width=800, title_text="Overview")
-    fig.show()
-    '''
 
 def ranked_per_capita():
     return None
@@ -566,12 +562,12 @@ def test_per_capita(df, undf, country_list):
 
 
 
-
+'''
 fig = px.bar([mini.query("@m in Country").iloc[-1] for m in mini.Country.unique()], x="Country", y="cumul death", 
                   color='Country', 
                   height=500) 
      fig.show() 
-
+'''
 
 
 
