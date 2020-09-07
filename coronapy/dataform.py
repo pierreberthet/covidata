@@ -17,6 +17,8 @@ import plotly.graph_objs as go
 import argparse
 import os
 
+import ptitprince as pt
+
 
 import scipy.signal as spsig
 import scipy.stats as stats
@@ -24,6 +26,12 @@ import itertools
 
 import plotly.io as pio
 pio.renderers.default = "browser"
+
+
+kwargs = {'xsize': 10, 'ysize': 6, 'palette': 'Set2', 'width_viol': .8,  # width of the pt rainplots
+          'alpha': .6,      # transparency value for pt plots
+          'orient': 'h'    # orientation of pt plots, either 'h' or 'v' ?
+          }
 
 
 def country_basic_data(df, country) -> dict:
@@ -542,8 +550,49 @@ def plot_overview_list(df, undf, country_list):
         fig.update_yaxes(title_text="cases", row=sx + 1, col=1)
     fig.update_layout(height=5000, width=1000,
                   title_text="Death / Cases for various metrics")
-
     fig.show()
+
+    return None
+
+
+def rainplot_full(df, undf, countries, **kwargs):
+
+    colors = n_colors('rgb(5, 200, 200)', 'rgb(200, 10, 10)', len(diagnostic), colortype='rgb')
+    fig = go.Figure()
+    df = df.query("@countries in Country")
+    for cx, country in enumerate(countries):
+        ddf = across_dx(ldataset, dx)
+        # if args.violin:
+        #     sns.catplot(x='Dataset', y='Age', hue='Sex', kind='violin', scale='count', legend=False, data=ddf).set(title=f"{dx} n={len(ddf)}", ylim=[0, agemax])
+        #     plt.legend(loc='upper left')
+        #     plt.tight_layout()
+        # else:
+        f, ax = plt.subplots(figsize=(xsize, ysize))
+
+        ax = pt.RainCloud(x='date', y='death', data=df, palette=palette, bw=.2,
+                          width_viol=width_viol, ax=ax, orient=orient, alpha=alpha, dodge=True, pointplot=False)
+        ax.set_xlim([0, agemax])
+        # handles, labels = ax.get_legend_handles_labels()
+        # f.legend(handles[0:ddf.Sex.nunique()], labels[0:ddf.Sex.nunique()], loc='upper right',
+        #          bbox_to_anchor=(1.15, 1), borderaxespad=0.)
+        # ax.legend(loc='lower right', shadow=True, ncol=1)
+        # ax.set_title(f"{dx} n={len(across_dx(ldataset, dx))}")
+        plt.title(f"{dx} n={len(ddf)}")
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[0:ddf.Sex.nunique()], labels[0:ddf.Sex.nunique()], loc='upper right')
+        plt.tight_layout()
+        plt.show()
+
+        fig.add_trace(go.Violin(x=ddf.Age, line_color=colors[x], name=dx))
+        fig.update_traces(orientation='h', side='positive', width=3, points=False)
+    fig.update_xaxes(title_text='Age')
+    fig.update_yaxes(title_text='Dx')
+    fig.update_layout(xaxis_showgrid=True, xaxis_zeroline=False, title='Age distribution per Dx across datasets')
+    fig.show()
+
+
+
+
 
 
 def ranked_per_capita():
