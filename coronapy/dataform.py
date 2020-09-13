@@ -14,6 +14,8 @@ import numpy as np
 from plotly.subplots import make_subplots
 import plotly.express as px
 import plotly.graph_objs as go
+from plotly.colors import n_colors
+
 import argparse
 import os
 
@@ -555,44 +557,64 @@ def plot_overview_list(df, undf, country_list):
     return None
 
 
-def rainplot_full(df, undf, countries, **kwargs):
+def rainplot_full(df, undf, countries,
+                  xsize=10, ysize=7,
+                  palette='Set2', bw=.2, width_viol=.8, orient='h', alpha=.6, **kwargs):
 
-    colors = n_colors('rgb(5, 200, 200)', 'rgb(200, 10, 10)', len(diagnostic), colortype='rgb')
+    colors = n_colors('rgb(5, 200, 200)', 'rgb(200, 10, 10)', len(countries), colortype='rgb')
     fig = go.Figure()
     df = df.query("@countries in Country")
-    for cx, country in enumerate(countries):
-        ddf = across_dx(ldataset, dx)
+    updated_df = pnd.DataFrame()
+    series = list_series(undf)
+    for cx, country in enumerate(tqdm(countries)):
+        
         # if args.violin:
         #     sns.catplot(x='Dataset', y='Age', hue='Sex', kind='violin', scale='count', legend=False, data=ddf).set(title=f"{dx} n={len(ddf)}", ylim=[0, agemax])
         #     plt.legend(loc='upper left')
         #     plt.tight_layout()
         # else:
-        f, ax = plt.subplots(figsize=(xsize, ysize))
+        tdf = df.query('@country in Country')
+        tdf['percapita_death'] = tdf['death'] / get_latest_data(undf, country, series[0])
+        tdf['percapita_cases'] = tdf['confirmed'] / get_latest_data(undf, country, series[0])
+        tdf['density_death'] = tdf['death'] / get_latest_data(undf, country, series[6])
+        tdf['density_cases'] = tdf['confirmed'] / get_latest_data(undf, country, series[6])
+        tdf['over60_death'] = tdf['death'] / get_latest_data(undf, country, series[5])
+        tdf['over60_cases'] = tdf['confirmed'] / get_latest_data(undf, country, series[5])
+        tdf['surface_death'] = tdf['death'] / get_latest_data(undf, country, series[7])
+        tdf['surface_cases'] = tdf['confirmed'] / get_latest_data(undf, country, series[7])
 
-        ax = pt.RainCloud(x='date', y='death', data=df, palette=palette, bw=.2,
-                          width_viol=width_viol, ax=ax, orient=orient, alpha=alpha, dodge=True, pointplot=False)
-        ax.set_xlim([0, agemax])
+
+        updated_df.append(tdf)
+        #f, ax = plt.subplots(figsize=(xsize, ysize))
+
+        #ax = pt.RainCloud(x='date', y='percapita_death', data=tdf, palette=palette, bw=.2,
+        #                  width_viol=width_viol, ax=ax, orient=orient, alpha=alpha, dodge=True, pointplot=False)
+        #ax.set_xlim([0, agemax])
         # handles, labels = ax.get_legend_handles_labels()
         # f.legend(handles[0:ddf.Sex.nunique()], labels[0:ddf.Sex.nunique()], loc='upper right',
         #          bbox_to_anchor=(1.15, 1), borderaxespad=0.)
         # ax.legend(loc='lower right', shadow=True, ncol=1)
         # ax.set_title(f"{dx} n={len(across_dx(ldataset, dx))}")
-        plt.title(f"{dx} n={len(ddf)}")
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles[0:ddf.Sex.nunique()], labels[0:ddf.Sex.nunique()], loc='upper right')
-        plt.tight_layout()
-        plt.show()
+        #plt.title(f"{country}")
+        #handles, labels = ax.get_legend_handles_labels()
+        #ax.legend(handles[0:ddf.Sex.nunique()], labels[0:ddf.Sex.nunique()], loc='upper right')
+        #plt.tight_layout()
+        #plt.show()
 
-        fig.add_trace(go.Violin(x=ddf.Age, line_color=colors[x], name=dx))
+        fig.add_trace(go.Violin(x=tdf.percapita_death, line_color=colors[cx], name=f"{country}"))
         fig.update_traces(orientation='h', side='positive', width=3, points=False)
-    fig.update_xaxes(title_text='Age')
-    fig.update_yaxes(title_text='Dx')
-    fig.update_layout(xaxis_showgrid=True, xaxis_zeroline=False, title='Age distribution per Dx across datasets')
+    fig.update_xaxes(title_text='date')
+    fig.update_yaxes(title_text='country')
+    fig.update_layout(xaxis_showgrid=True, xaxis_zeroline=False, title='daily death per capita')
     fig.show()
 
+    return updated_df
 
 
 
+def restricted_undf_per_capita(df, undf, focus):
+    df = df.query("@countries in Country")
+    return none
 
 
 def ranked_per_capita():
