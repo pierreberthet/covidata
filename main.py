@@ -70,6 +70,13 @@ focusdf = global_description(ndf, focus_countries)
 focusdf.sort_values(by='new deaths')
 
 
+europe = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Switzerland', 'Spain', 'Belgium',
+          'Portugal', 'Ireland', 'Poland', 'Estonia', 'Latvia', 'Lithuania', 'Iceland', 'Netherlands', 'Denmark', 'Finland',
+          'Austria', 'Greece', 'Bulgaria', 'Romania', 'Montenegro', 'Croatia', 'Turkey', 'Serbia', 'Hungary', 'Cyprus',
+          'Slovakia', 'Slovenia', 'Luxembourg', 'Albania', 'Czechia', 'Moldova', 'Ukraine']
+
+outside = ['Georgia', 'Armenia', 'Russia', ]
+
 worst_plot = sns.barplot(x="date", y="cumul death", hue="Country", data=ndf[ndf.Country.isin(worstdf.Country[-10:])])
 worst_plot.set_xticklabels(worst_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
 
@@ -274,4 +281,7 @@ correlation with:
 * datasets: WID, Humanitarian Data Exchange
 
 ** correlation evolution wrt time  
+
+* 7 day running average
+
 '''

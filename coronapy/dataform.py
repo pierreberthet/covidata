@@ -18,6 +18,7 @@ from plotly.colors import n_colors
 
 import argparse
 import os
+import typing
 
 import ptitprince as pt
 
@@ -505,6 +506,19 @@ def get_Xworst_Ydays(df: pnd.DataFrame, ncountries: int, days: int) -> pnd.DataF
 
 
 
+def get_countries_over_threshold(df: pnd.DataFrame, undf: pnd.DataFrame, threshold: int = 20/100000., window: int = 14):
+    """
+    Returns a list of the countries with a ratio new case per 100000 persons is over a threshold,
+    based on the previous window days.
+    :params df: a pandas dataframe containing daily country data (cases)
+    :params undf: a pandas dataframe containing the population of the countries
+    :params threshold: an integer specifying the selection for the ratio cases / 100000
+    :params window: number of past days taken into account for the analysis
+    :return: pandas dataframe of countries and their values 
+    """
+    pass
+
+
 
 def print_list_provinces(df: pnd.DataFrame):
     '''Print the provinces for each Country which has provinces listed.
@@ -531,10 +545,36 @@ def list_series(undf):
     return undf.series.unique().tolist()
 
 
+def get_random_qualitative_color_map(
+        categories:list,
+        colors: typing.List[str] = px.colors.cyclical.mygbm
+        ) -> typing.List[str]:
+    """
+    Returns a color coding for a given series (one color for every unique value). Will repeat colors if not enough are
+    provided.
+    For some color scales see: https://plotly.com/python/builtin-colorscales/
+    Some options are: Phase, Edge, mygbm, mrybm, HSV, IceFire.
+    :param categories: A series of categorial data
+    :param colors: color codes (everything plotly accepts)
+    :return: Array of colors matching the index of the objects
+    """
+    # get unique identifiers
+    unique_series = categories
+
+    # create lookup table - colors will be repeated if not enough
+    color_lookup_table = dict((value, color) for (value, color) in zip(unique_series, itertools.cycle(colors)))
+
+    # look up the colors in the table
+    return [color_lookup_table[key] for key in categories]
+
+
+
+
 def plot_overview_list(df, undf, country_list):
     series = list_series(undf)
     fig = make_subplots(rows=len(series), cols=1,
                         subplot_titles=series)
+    color_rgb = get_random_qualitative_color_map(country_list)
     for sx, serie in enumerate(series):
         '''for c in country_list:
             cur = df.query("@c in Country")
@@ -543,18 +583,84 @@ def plot_overview_list(df, undf, country_list):
                                     for c in country_list],
                                  y=[df.query("@c in Country").iloc[-1]['cumul confirmed'] / get_latest_data(undf, c, serie)
                                     for c in country_list],
-                                 mode='markers', marker=dict(), name=serie),
+                                 text=[c for c in country_list], # hover_data=[['A', 'B'] for c in country_list],
+                                 hovertemplate="%{text}<br><br>cases: %{y}<br>deaths: %{x} ",
+                                 mode='markers', marker=dict(color=color_rgb), name=country_list),
                       row=sx + 1, col=1,)
     
 
-    for sx in range(len(series)):
-        fig.update_xaxes(title_text="deaths", row=sx + 1, col=1)
-        fig.update_yaxes(title_text="cases", row=sx + 1, col=1)
+    for sx, serie in enumerate(series):
+        fig.update_xaxes(title_text=f"Deaths / {serie}", row=sx + 1, col=1)
+        fig.update_yaxes(title_text=f"Cases / {serie}", row=sx + 1, col=1)
     fig.update_layout(height=5000, width=1000,
                   title_text="Death / Cases for various metrics")
     fig.show()
 
     return None
+
+
+
+def plot_overview_list_beta(df, undf, country_list):
+    series = list_series(undf)
+    fig = make_subplots(rows=len(series), cols=1,
+                        subplot_titles=series)
+    color_rgb = get_random_qualitative_color_map(country_list)
+    for sx, serie in enumerate(series):
+        '''for c in country_list:
+            cur = df.query("@c in Country")
+            latest = get_latest_data(undf, c, serie)'''
+        #for cx, c in enumerate(country_list):
+        fig.add_trace([go.Scatter(x=df.query("@c in Country").iloc[-1]['cumul death'] / get_latest_data(undf, c, serie),
+                                 y=df.query("@c in Country").iloc[-1]['cumul confirmed'] / get_latest_data(undf, c, serie),
+                                 text=c, # hover_data=[['A', 'B'] for c in country_list],
+                                 hovertemplate="%{text}<br><br>cases: %{y}<br>deaths: %{x} ",
+                                 mode='markers', marker=dict(color=color_rgb[cx]), name=c) for cx, c in enumerate(country_list)],
+                      row=sx + 1, col=1)
+    
+
+    for sx, serie in enumerate(series):
+        fig.update_xaxes(title_text=f"Deaths / {serie}", row=sx + 1, col=1)
+        fig.update_yaxes(title_text=f"Cases / {serie}", row=sx + 1, col=1)
+    fig.update_layout(height=5000, width=1000,
+                  title_text="Death / Cases for various metrics")
+    fig.show()
+
+    return None
+
+
+
+
+
+def plot_overview_bubbles(df, undf, country_list):
+    series = list_series(undf)
+    fig = make_subplots(rows=len(series), cols=1,
+                        subplot_titles=series)
+    color_rgb = get_random_qualitative_color_map(country_list)
+    for sx, serie in enumerate(series):
+        '''for c in country_list:
+            cur = df.query("@c in Country")
+            latest = get_latest_data(undf, c, serie)'''
+        fig.add_trace(go.Scatter(x=[df.query("@c in Country").iloc[-1]['cumul death']
+                                    for c in country_list],
+                                 y=[df.query("@c in Country").iloc[-1]['cumul confirmed']
+                                    for c in country_list],
+                                 text=[c for c in country_list], # hover_data=[['A', 'B'] for c in country_list],
+                                 customdata=[f"{get_latest_data(undf, c, serie)} {serie}" for c in country_list],
+                                 hovertemplate="%{text}<br>%{customdata}<br><br>cases: %{y}<br>deaths: %{x} ",
+                                 mode='markers', marker=dict(color=color_rgb),
+                                 marker_size=[get_latest_data(undf, c, serie)  for c in country_list], name=country_list),
+                      row=sx + 1, col=1,)
+    
+
+    for sx, serie in enumerate(series):
+        fig.update_xaxes(title_text=f"Deaths (absolute)", row=sx + 1, col=1)
+        fig.update_yaxes(title_text=f"Cases (absolute)", row=sx + 1, col=1)
+    fig.update_layout(height=5000, width=1000,
+                  title_text="Death / Cases for various metrics")
+    fig.show()
+
+    return None
+
 
 
 def rainplot_full(df, undf, countries,
