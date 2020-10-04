@@ -577,7 +577,46 @@ def get_latest_DeathsCases_days_per100000(df: pnd.DataFrame, undf: pnd.DataFrame
 
 
 def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country=None, days: int = 14):
-    pass
+    res = []
+    if type(country) == str:
+        country = [country]
+    if country is None:
+        country = df.Country.unique()
+    for c in tqdm(country):
+        country_data = df.query("@c in Country")
+        for dx in range(days, len(country_data)):
+
+            res.append({'country': c, 'date': country_data.iloc[dx]['date'],
+                        'deaths':sum(country_data.iloc[dx-days:dx]['death']),
+                        'cases':sum(country_data.iloc[dx-days:dx]['confirmed']),
+                        'deaths_per100000':sum(country_data.iloc[dx-days:dx]['death']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10),
+                        'cases_per100000':sum(country_data.iloc[dx-days:dx]['confirmed']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10)
+                        })
+    return pnd.DataFrame(res)
+
+
+
+
+
+def plot_sliding_per100000(df: pnd.DataFrame, days: int = 14, **kwargs):
+    fig = px.line(df, x='date', y='cases_per100000', color='country')
+    fig.update_layout(title=f'New cases per 100 000 per country per sliding {days} days' ,
+                      xaxis_title="date",
+                      yaxis_title="new cases per 100 000 inhabitants")
+    fig.show()
+    return None
+
+
+def pred_basic_peak_now(df: pnd.DataFrame):
+    """
+    Return the predicted below 20/100000 new cases per 14 days if the peak is today, only supposing the time from
+    under 20 / 1000000 to peak will be the same as from peak back to under 20/100000.
+    """
+    today = date.today()
+    res = []
+    for c in df.country.unique():
+
+
 
 
 
