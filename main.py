@@ -79,6 +79,7 @@ outside = ['Georgia', 'Armenia', 'Russia', ]
 
 worst_plot = sns.barplot(x="date", y="cumul death", hue="Country", data=ndf[ndf.Country.isin(worstdf.Country[-10:])])
 worst_plot.set_xticklabels(worst_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
+worst_plot.set_title(f'Worst {worst_nb} countries in the last {worst_days} days')
 
 plt.show()
 
@@ -284,4 +285,6 @@ correlation with:
 
 * 7 day running average
 
+
+map of europe with color=trend of infection per 100000
 '''

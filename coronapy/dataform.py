@@ -516,7 +516,10 @@ def get_countries_over_threshold(df: pnd.DataFrame, undf: pnd.DataFrame, thresho
     :params window: number of past days taken into account for the analysis
     :return: pandas dataframe of countries and their values 
     """
-    pass
+    res = []
+    df14 = get_latest_DeathsCases_days(df, df.Country.unique(), days=14)
+    for cx, c in df14.Country.unique():
+        df14.at[]
 
 
 
@@ -530,6 +533,51 @@ def print_list_provinces(df: pnd.DataFrame):
         [print(f"   - {prov}") for prov in list_provinces(get_country(ndf, c))]
     return True
 
+
+
+def get_latest_deaths_cumul(df: pnd.DataFrame, country=None):
+    res = []
+    if type(country) == str:
+        country = [country]
+    if country is None:
+        country = df.Country.unique()
+    for c in country:
+        res.append({'country': c, 'deaths':df.query("@c in Country")['death'][-1],
+                    'cases':df.query("@c in Country")['confirmed'][-1]})
+    return pnd.DataFrame(res)
+
+
+
+def get_latest_DeathsCases_days(df: pnd.DataFrame, country=None, days: int = 14):
+    res = []
+    if type(country) == str:
+        country = [country]
+    if country is None:
+        country = df.Country.unique()
+    for c in country:
+        res.append({'country': c, 'deaths':sum(df.query("@c in Country")['death'][-days:]),
+                    'cases':sum(df.query("@c in Country")['confirmed'][-days:])})
+    return pnd.DataFrame(res)
+
+
+def get_latest_DeathsCases_days_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country=None, days: int = 14):
+    res = []
+    if type(country) == str:
+        country = [country]
+    if country is None:
+        country = df.Country.unique()
+    for c in country:
+        res.append({'country': c,
+                    'deaths':sum(df.query("@c in Country")['death'][-days:]),
+                    'cases':sum(df.query("@c in Country")['confirmed'][-days:]),
+                    'deaths_per100000':sum(df.query("@c in Country")['death'][-days:]) / (get_latest_data(undf, c, list_series(undf)[0]) * 10),
+                    'cases_per100000':sum(df.query("@c in Country")['confirmed'][-days:]) / (get_latest_data(undf, c, list_series(undf)[0]) * 10)
+                    })
+    return pnd.DataFrame(res)
+
+
+def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country=None, days: int = 14):
+    pass
 
 
 
@@ -584,8 +632,9 @@ def plot_overview_list(df, undf, country_list):
                                  y=[df.query("@c in Country").iloc[-1]['cumul confirmed'] / get_latest_data(undf, c, serie)
                                     for c in country_list],
                                  text=[c for c in country_list], # hover_data=[['A', 'B'] for c in country_list],
-                                 hovertemplate="%{text}<br><br>cases: %{y}<br>deaths: %{x} ",
-                                 mode='markers', marker=dict(color=color_rgb), name=country_list),
+                                 customdata=[f"{get_latest_data(undf, c, serie)} {serie}" for c in country_list],
+                                 hovertemplate="%{text}<br>%{customdata}<br><br>cases: %{y}<br>deaths: %{x} ",
+                                 mode='markers', marker=dict(color=color_rgb), name=None),
                       row=sx + 1, col=1,)
     
 
@@ -593,7 +642,7 @@ def plot_overview_list(df, undf, country_list):
         fig.update_xaxes(title_text=f"Deaths / {serie}", row=sx + 1, col=1)
         fig.update_yaxes(title_text=f"Cases / {serie}", row=sx + 1, col=1)
     fig.update_layout(height=5000, width=1000,
-                  title_text="Death / Cases for various metrics")
+                  title_text="Death / Cases raported to various metrics (Population, Density, Surface, ...)")
     fig.show()
 
     return None
@@ -648,7 +697,7 @@ def plot_overview_bubbles(df, undf, country_list):
                                  customdata=[f"{get_latest_data(undf, c, serie)} {serie}" for c in country_list],
                                  hovertemplate="%{text}<br>%{customdata}<br><br>cases: %{y}<br>deaths: %{x} ",
                                  mode='markers', marker=dict(color=color_rgb),
-                                 marker_size=[get_latest_data(undf, c, serie)  for c in country_list], name=country_list),
+                                 marker_size=[get_latest_data(undf, c, serie)  for c in country_list], name=None),
                       row=sx + 1, col=1,)
     
 
@@ -656,7 +705,7 @@ def plot_overview_bubbles(df, undf, country_list):
         fig.update_xaxes(title_text=f"Deaths (absolute)", row=sx + 1, col=1)
         fig.update_yaxes(title_text=f"Cases (absolute)", row=sx + 1, col=1)
     fig.update_layout(height=5000, width=1000,
-                  title_text="Death / Cases for various metrics")
+                  title_text="Death / Cases for selected countries, bubble size wrt to different metrics")
     fig.show()
 
     return None
@@ -719,7 +768,7 @@ def rainplot_full(df, undf, countries,
 
 
 def restricted_undf_per_capita(df, undf, focus):
-    df = df.query("@countries in Country")
+    df = df.query("@focus in Country")
     return none
 
 
@@ -736,6 +785,14 @@ def test_per_capita(df, undf, country_list):
             latest = get_latest_data(undf, c, serie)
             print(f"    death {round(cur.iloc[-1]['cumul death'] / latest, 2)}\
                     cases {round(cur.iloc[-1]['cumul confirmed'] / latest, 2)}")
+
+
+def data_per_capita(df: pnd.DataFrame, undf: pnd.DataFrame, country):
+    res = []
+    for c in country:
+        c.append({'country':c, 'cases': , 'deaths':})
+
+
 
 
 
