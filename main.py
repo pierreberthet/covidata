@@ -287,4 +287,10 @@ correlation with:
 
 
 map of europe with color=trend of infection per 100000
+
+
+compute time for 1st wav over 20/100000 new cases per 14 days: project for 2nd wave
+
+function if_peak_now: end = time from last below thershold till today, added to today.
+
 '''

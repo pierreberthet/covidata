@@ -516,10 +516,7 @@ def get_countries_over_threshold(df: pnd.DataFrame, undf: pnd.DataFrame, thresho
     :params window: number of past days taken into account for the analysis
     :return: pandas dataframe of countries and their values 
     """
-    res = []
-    df14 = get_latest_DeathsCases_days(df, df.Country.unique(), days=14)
-    for cx, c in df14.Country.unique():
-        df14.at[]
+    pass
 
 
 
@@ -615,8 +612,8 @@ def pred_basic_peak_now(df: pnd.DataFrame):
     today = date.today()
     res = []
     for c in df.country.unique():
-
-
+        country_data = df.query("@c in country")
+        
 
 
 
@@ -827,10 +824,10 @@ def test_per_capita(df, undf, country_list):
 
 
 def data_per_capita(df: pnd.DataFrame, undf: pnd.DataFrame, country):
-    res = []
-    for c in country:
-        c.append({'country':c, 'cases': , 'deaths':})
-
+    # res = []
+    # for c in country:
+    #     c.append({'country':c, 'cases': , 'deaths':})
+    pass
 
 
 
