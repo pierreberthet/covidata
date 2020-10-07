@@ -8,7 +8,7 @@ from shapely import wkt
 from shapely.geometry import Point
 
 from matplotlib import pyplot as plt
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
@@ -73,7 +73,12 @@ focusdf.sort_values(by='new deaths')
 europe = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Switzerland', 'Spain', 'Belgium',
           'Portugal', 'Ireland', 'Poland', 'Estonia', 'Latvia', 'Lithuania', 'Iceland', 'Netherlands', 'Denmark', 'Finland',
           'Austria', 'Greece', 'Bulgaria', 'Romania', 'Montenegro', 'Croatia', 'Turkey', 'Serbia', 'Hungary', 'Cyprus',
-          'Slovakia', 'Slovenia', 'Luxembourg', 'Albania', 'Czechia', 'Moldova', 'Ukraine']
+          'Slovakia', 'Slovenia', 'Luxembourg', 'Albania', 'Czechia', 'Moldova', 'Ukraine', 'Malta']
+
+fhi = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Switzerland', 'Spain', 'Belgium',
+       'Portugal', 'Ireland', 'Poland', 'Estonia', 'Latvia', 'Lithuania', 'Iceland', 'Netherlands', 'Denmark', 'Finland',
+       'Austria', 'Greece', 'Bulgaria', 'Romania', 'Hungary', 'Cyprus',
+       'Slovakia', 'Slovenia', 'Luxembourg', 'Czechia', 'Croatia']
 
 outside = ['Georgia', 'Armenia', 'Russia', ]
 
@@ -244,6 +249,26 @@ for serie in list_series(undf):
         get_latest_data(undf, c, serie)
 
 
+
+print('Running sum of the new cases per 100000 inhabitants over the last 14 days')
+print(get_latest_DeathsCases_days_per100000(ddf, undf, europe, 14).sort_values(by=['cases_per100000']))
+
+
+
+
+print('FHI RELEVANT: Running sum of the new cases per 100000 inhabitants over the last 14 days')
+print(get_latest_DeathsCases_days_per100000(ddf, undf, fhi, 14).sort_values(by=['cases_per100000']))
+
+running = get_sliding_window_per100000(ddf, undf, europe)
+plot_sliding_per100000(running)
+
+
+print("predicted first day below threshold based on gaussian distribution and peak is today at worst:")
+print(pred_basic_peak_now(running, europe))
+
+
+
+
 # compute and display the X worst and Y best faring countries in % of pop, and other variables: GDP, % old pop, ...
 
 
@@ -284,6 +309,13 @@ correlation with:
 ** correlation evolution wrt time  
 
 * 7 day running average
+
+
+
+Actual criterii from FHI.no:
+Kriterier for vurdering av smittespredning 
+Det er unntak fra innreisekarantene for reisende fra land i EU-, EØS- og Schengen-området
+med færre enn 20 bekreftede tilfeller per 100 000 innbyggere de siste to ukene (vurdert på landnivå) og i gjennomsnitt mindre enn 5 % positive prøver de siste to ukene.
 
 
 map of europe with color=trend of infection per 100000

@@ -22,6 +22,7 @@ import typing
 
 import ptitprince as pt
 
+from sklearn.linear_model import LinearRegression
 
 import scipy.signal as spsig
 import scipy.stats as stats
@@ -557,7 +558,7 @@ def get_latest_DeathsCases_days(df: pnd.DataFrame, country=None, days: int = 14)
     return pnd.DataFrame(res)
 
 
-def get_latest_DeathsCases_days_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country=None, days: int = 14):
+def get_latest_DeathsCases_days_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country = None, days: int = 14):
     res = []
     if type(country) == str:
         country = [country]
@@ -573,7 +574,7 @@ def get_latest_DeathsCases_days_per100000(df: pnd.DataFrame, undf: pnd.DataFrame
     return pnd.DataFrame(res)
 
 
-def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country=None, days: int = 14):
+def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country = None, days: int = 14):
     res = []
     if type(country) == str:
         country = [country]
@@ -584,10 +585,10 @@ def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country
         for dx in range(days, len(country_data)):
 
             res.append({'country': c, 'date': country_data.iloc[dx]['date'],
-                        'deaths':sum(country_data.iloc[dx-days:dx]['death']),
-                        'cases':sum(country_data.iloc[dx-days:dx]['confirmed']),
-                        'deaths_per100000':sum(country_data.iloc[dx-days:dx]['death']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10),
-                        'cases_per100000':sum(country_data.iloc[dx-days:dx]['confirmed']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10)
+                        'deaths':sum(country_data.iloc[dx-days + 1:dx + 1]['death']),
+                        'cases':sum(country_data.iloc[dx-days + 1:dx + 1]['confirmed']),
+                        'deaths_per100000':sum(country_data.iloc[dx-days + 1:dx + 1]['death']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10),
+                        'cases_per100000':sum(country_data.iloc[dx-days + 1:dx + 1]['confirmed']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10)
                         })
     return pnd.DataFrame(res)
 
@@ -604,15 +605,38 @@ def plot_sliding_per100000(df: pnd.DataFrame, days: int = 14, **kwargs):
     return None
 
 
-def pred_basic_peak_now(df: pnd.DataFrame):
+def pred_basic_peak_now(df: pnd.DataFrame, country = None, day: int = 5):
     """
     Return the predicted below 20/100000 new cases per 14 days if the peak is today, only supposing the time from
     under 20 / 1000000 to peak will be the same as from peak back to under 20/100000.
     """
     today = date.today()
     res = []
-    for c in df.country.unique():
-        country_data = df.query("@c in country")
+    if type(country) == str:
+        country = [country]
+    if country is None:
+        country = df.Country.unique()
+    for c in tqdm(country):
+        cdf = df.query("@c in country")
+        print(f"country: {c}")
+        # compute peak
+        if LinearRegression().fit(np.arange(day).reshape((-1, 1)), cdf['cases_per100000'].iloc[-day:]).coef_ > 0:
+            trend = 'up'
+            peak_day = datetime.today()
+        else:
+            trend = 'down'
+            delay = 0
+            while LinearRegression().fit(np.arange(day).reshape((-1, 1)), cdf['cases_per100000'].iloc[-(day+delay):len(cdf)-delay]).coef_ < 0:
+                day+=1
+                peak_day = cdf['date'].iloc[-day]
+            peak_day = datetime.strptime(peak_day, '%Y-%m-%d')
+
+        res.append({'country': c, 'last day below threshold': cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None,
+                    'trend': trend,
+                    'half_peak_span': (peak_day - datetime.strptime(cdf[cdf['cases_per100000']<20.]['date'].iloc[-1], '%Y-%m-%d')).days if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None,
+                    'predicted end': str((peak_day + timedelta(days=peak_day - datetime.strptime(cdf[cdf['cases_per100000']<20.]['date'].iloc[-1], '%Y-%m-%d'))).days.date()) if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None})
+
+    return pnd.DataFrame(res)
         
 
 
