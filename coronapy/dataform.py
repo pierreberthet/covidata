@@ -9,7 +9,7 @@ from shapely.geometry import Point
 
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 import numpy as np
 from plotly.subplots import make_subplots
 import plotly.express as px
@@ -627,14 +627,14 @@ def pred_basic_peak_now(df: pnd.DataFrame, country = None, day: int = 5):
             trend = 'down'
             delay = 0
             while LinearRegression().fit(np.arange(day).reshape((-1, 1)), cdf['cases_per100000'].iloc[-(day+delay):len(cdf)-delay]).coef_ < 0:
-                day+=1
+                delay+=1
                 peak_day = cdf['date'].iloc[-day]
             peak_day = datetime.strptime(peak_day, '%Y-%m-%d')
 
         res.append({'country': c, 'last day below threshold': cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None,
                     'trend': trend,
                     'half_peak_span': (peak_day - datetime.strptime(cdf[cdf['cases_per100000']<20.]['date'].iloc[-1], '%Y-%m-%d')).days if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None,
-                    'predicted end': str((peak_day + timedelta(days=peak_day - datetime.strptime(cdf[cdf['cases_per100000']<20.]['date'].iloc[-1], '%Y-%m-%d'))).days.date()) if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None})
+                    'predicted end': str((peak_day + timedelta(days=(peak_day - datetime.strptime(cdf[cdf['cases_per100000']<20.]['date'].iloc[-1], '%Y-%m-%d')).days)).date()) if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None})
 
     return pnd.DataFrame(res)
         

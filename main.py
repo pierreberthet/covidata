@@ -48,7 +48,7 @@ ndf, error = transform_metro(df)
 
 ddf = ndf.copy()
 
-ndf.confirmed.plot()
+#ndf.confirmed.plot()
 
 
 worst_nb = 5
@@ -279,7 +279,9 @@ print(pred_basic_peak_now(running, europe))
 # ###  TODO  ####
 '''
 * fix multiple congo entries
-* broken: plotly display figures (should display on a new browser page)
+* FIXED: broken: plotly display figures (should display on a new browser page)
+* see github issues
+
 
 * mutual information
 * CCA canonical correlation analysis: canonical-correlation analysis will find linear combinations of X and Y which have maximum correlation with each other (wikipedia)
@@ -307,6 +309,7 @@ correlation with:
 * datasets: WID, Humanitarian Data Exchange
 
 ** correlation evolution wrt time  
+** autocorrelation
 
 * 7 day running average
 
