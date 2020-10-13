@@ -326,6 +326,9 @@ map of europe with color=trend of infection per 100000
 
 compute time for 1st wav over 20/100000 new cases per 14 days: project for 2nd wave
 
-function if_peak_now: end = time from last below thershold till today, added to today.
+DONE - function if_peak_now: end = time from last below thershold till today, added to today.
+
+model the first wave, and especially the decreasing phase relatively to the increasing one, and apply it on the second wave to determine when getting
+subthreshold from today, but also the peak of second wave: country level, regional level, world level.
 
 '''

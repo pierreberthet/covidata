@@ -618,7 +618,6 @@ def pred_basic_peak_now(df: pnd.DataFrame, country = None, day: int = 5):
         country = df.Country.unique()
     for c in tqdm(country):
         cdf = df.query("@c in country")
-        print(f"country: {c}")
         # compute peak
         if LinearRegression().fit(np.arange(day).reshape((-1, 1)), cdf['cases_per100000'].iloc[-day:]).coef_ > 0:
             trend = 'up'
