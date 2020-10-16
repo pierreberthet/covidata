@@ -777,7 +777,7 @@ def rainplot_full(df, undf, countries,
 
     colors = n_colors('rgb(5, 200, 200)', 'rgb(200, 10, 10)', len(countries), colortype='rgb')
     fig = go.Figure()
-    df = df.query("@countries in Country")
+    # spe_df = df.query("@countries in Country")
     updated_df = pnd.DataFrame()
     series = list_series(undf)
     for cx, country in enumerate(tqdm(countries)):
@@ -817,9 +817,9 @@ def rainplot_full(df, undf, countries,
 
         fig.add_trace(go.Violin(x=tdf.percapita_death, line_color=colors[cx], name=f"{country}"))
         fig.update_traces(orientation='h', side='positive', width=3, points=False)
-    fig.update_xaxes(title_text='date')
+    fig.update_xaxes(title_text='distribution')
     fig.update_yaxes(title_text='country')
-    fig.update_layout(xaxis_showgrid=True, xaxis_zeroline=False, title='daily death per capita')
+    fig.update_layout(xaxis_showgrid=True, xaxis_zeroline=False, title='distribution of daily death per million inhabitants')
     fig.show()
 
     return updated_df
