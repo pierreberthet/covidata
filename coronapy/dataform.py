@@ -596,11 +596,26 @@ def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country
 
 
 
-def plot_sliding_per100000(df: pnd.DataFrame, days: int = 14, **kwargs):
-    fig = px.line(df, x='date', y='cases_per100000', color='country')
-    fig.update_layout(title=f'New cases per 100 000 per country per sliding {days} days' ,
+def plot_sliding_per100000(df: pnd.DataFrame, days: int = 14, metric='cases_per100000', **kwargs):
+    if metric == 'cases_per100000':
+        ylabel = f'New CoViD-19 cases per 100 000 inhabitants per sliding {days} days'
+        title = f'CoViD-19 cases per 100 000 per country per sliding {days} days'
+    elif metric == 'deaths_per100000':
+        ylabel = f'CoViD-19 deaths per 100 000 inhabitants per sliding {days} days'
+        title = f'CoViD-19 daths per 100 000 per country per sliding {days} days'
+    elif metric == 'deaths':
+        ylabel = f'CoViD-19 deaths per country per sliding {days} days'
+        title = f'CoViD-19 deaths per sliding {days} days'
+    elif metric == 'cases':
+        ylabel = f'New CoViD-19 cases per country per sliding {days} days'
+        title = f'New CoViD-19 cases per sliding {days} days'
+    else:
+        print(f"{metric} is not amongst the recognised options:\n cases_per100000, deaths_per100000, cases, deaths")
+
+    fig = px.line(df, x='date', y=metric, color='country')
+    fig.update_layout(title=title,
                       xaxis_title="date",
-                      yaxis_title="new cases per 100 000 inhabitants")
+                      yaxis_title=ylabel)
     fig.show()
     return None
 

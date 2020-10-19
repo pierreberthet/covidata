@@ -261,7 +261,7 @@ print(get_latest_DeathsCases_days_per100000(ddf, undf, fhi, 14).sort_values(by=[
 
 running = get_sliding_window_per100000(ddf, undf, europe)
 plot_sliding_per100000(running)
-
+plot_sliding_per100000(running, metric='deaths_per100000')
 
 print("predicted first day below threshold based on gaussian distribution and peak is today at worst:")
 print(pred_basic_peak_now(running, europe))
