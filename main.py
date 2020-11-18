@@ -1,7 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created in April 2020 
+
+@author: pierre berthet
+"""
+
+
 import pandas as pnd
 import geopandas as gpd
 import seaborn as sns
 from tqdm import trange, tqdm
+
+import git
 
 import shapely
 from shapely import wkt
@@ -36,6 +47,14 @@ def toGeoDF(df, geometry="geog"):
     return gpd.GeoDataFrame(tempDF, geometry=geometry)
 
 
+
+#######################  Pull latest data from J. Hopkins University repo  #################
+john_hopkins_data_dir = '../coronavirus'
+repo = git.Repo(john_hopkins_data_dir)
+git_pull = repo.remotes.origin.pull()
+
+
+######################  MAIN  ##############################################################
 cwd = os.getcwd()
 # fcsv = '../coronavirus-csv/coronavirus_dataset.csv'
 fcsv = '../coronavirus/csv/coronavirus.csv'
@@ -82,11 +101,20 @@ fhi = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Swit
 
 outside = ['Georgia', 'Armenia', 'Russia', ]
 
+sns.set_context("paper", font_scale=.5)
 worst_plot = sns.barplot(x="date", y="cumul death", hue="Country", data=ndf[ndf.Country.isin(worstdf.Country[-10:])])
-worst_plot.set_xticklabels(worst_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
+worst_plot.set_xticklabels(worst_plot.get_xticklabels(), rotation=90, horizontalalignment='right')
 worst_plot.set_title(f'Worst {worst_nb} countries in the last {worst_days} days')
-
+# for n, label in enumerate(worst_plot.xaxis.get_ticklabels()):
+#     label.set_visible(False)
+simplify_axes(worst_plot)
+every_nth = 2
+for n, label in enumerate(worst_plot.xaxis.get_ticklabels()):
+    if n % every_nth != 0:
+        label.set_visible(False)
 plt.show()
+
+sns.set_context("paper", font_scale=1)
 
 ff.create_table(ndf.query("'France' in Country"))
 
@@ -119,6 +147,7 @@ np.fill_diagonal(pvalues, 1)
 corrcf_plot = sns.heatmap(corrcoeff, xticklabels=focus, yticklabels=focus, annot=True)
 corrcf_plot.set_xticklabels(corrcf_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
 corrcf_plot.set_title('Correlations')
+simplify_axes(corrcf_plot)
 
 #sns.heatmap(res.corr(), annot=True).set_title('Correlations')
 plt.show()
@@ -126,7 +155,7 @@ plt.show()
 covariances_plot = sns.heatmap(res.cov())
 covariances_plot.set_title('Covariances')
 covariances_plot.set_xticklabels(covariances_plot.get_xticklabels(), rotation=45, horizontalalignment='right')
-
+simplify_axes(covariances_plot)
 plt.show()
 
 ####################################
@@ -134,7 +163,7 @@ plt.show()
 
 focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Iran',
          'China', 'Spain', 'Taiwan*', 'Korea, South', 'Singapore', 'Israel', 'Netherlands',
-         'Nigeria', 'US']
+         'Nigeria', 'US', 'Japan']
 combinations = itertools.combinations(focus, 2)
 # crosscorr = np.zeros((len(focus), len(focus)))
 # pvalues = np.zeros((len(focus), len(focus)))
@@ -153,14 +182,18 @@ ax = plt.figure().add_subplot(111)
 ax.plot(spsig.correlate(ndf.query("'France' in Country").death / ndf.query("'France' in Country").death.max(),
                          ndf.query("'Italy' in Country").death / ndf.query("'Italy' in Country").death.max()))
 ax.set_title('France Italy correlation death')
+simplify_axes(ax)
 
 reference = 'Norway'
 con, death, reco = crosscorr(reference, True, ndf)
 m = con.max()
 m.sort_values()[-10:].index.tolist()
-con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} confirmed")
-death[death.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} death")
-reco[reco.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} recovered")
+ax_con = con[con.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} confirmed")
+ax_death = death[death.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} death")
+ax_reco = reco[reco.max().sort_values()[-10:].index.tolist()].plot(title=f"Cross-correlation {reference.upper()} recovered")
+simplify_axes(ax_con)
+simplify_axes(ax_death)
+simplify_axes(ax_reco)
 plt.show()
 
 
@@ -267,6 +300,28 @@ print("predicted first day below threshold based on gaussian distribution and pe
 print(pred_basic_peak_now(running, europe))
 
 
+focus_slide = get_sliding_window_per100000(ddf, undf, focus)
+plot_sliding_per100000(focus_slide)
+plot_sliding_per100000(focus_slide, metric='deaths_per100000')
+
+
+
+
+# focus_slide = get_sliding_window_per100000(ddf, undf, focus, days=1)
+# plot_sliding_per100000(focus_slide)
+# plot_sliding_per100000(focus_slide, metric='deaths_per100000')
+
+
+
+worst_nb = 20
+worst_days = 1
+worstdf = get_Xworst_Ydays(ndf, worst_nb, worst_days)
+print(f" {worst_nb} worst countries for the last {worst_days} day")
+print(f"{worstdf}")
+
+
+norway = ddf.query("Country=='Norway'")
+france = ddf.query("Country=='France'")
 
 
 # compute and display the X worst and Y best faring countries in % of pop, and other variables: GDP, % old pop, ...

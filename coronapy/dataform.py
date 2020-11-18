@@ -590,7 +590,10 @@ def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country
                         'deaths_per100000':sum(country_data.iloc[dx-days + 1:dx + 1]['death']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10),
                         'cases_per100000':sum(country_data.iloc[dx-days + 1:dx + 1]['confirmed']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10)
                         })
-    return pnd.DataFrame(res)
+    res = pnd.DataFrame(res)
+    res['ratio_per100000'] = res['deaths_per100000'] / res['cases_per100000']
+    res['ratio'] = res['deaths'] / res['cases']
+    return res
 
 
 
@@ -602,13 +605,19 @@ def plot_sliding_per100000(df: pnd.DataFrame, days: int = 14, metric='cases_per1
         title = f'CoViD-19 cases per 100 000 per country per sliding {days} days'
     elif metric == 'deaths_per100000':
         ylabel = f'CoViD-19 deaths per 100 000 inhabitants per sliding {days} days'
-        title = f'CoViD-19 daths per 100 000 per country per sliding {days} days'
+        title = f'CoViD-19 deaths per 100 000 per country per sliding {days} days'
     elif metric == 'deaths':
         ylabel = f'CoViD-19 deaths per country per sliding {days} days'
         title = f'CoViD-19 deaths per sliding {days} days'
     elif metric == 'cases':
         ylabel = f'New CoViD-19 cases per country per sliding {days} days'
         title = f'New CoViD-19 cases per sliding {days} days'
+    elif metric == 'ratio_per100000':
+        ylabel = f'Ratio of deaths over cases of CoViD-19 per 100 000 inhabitants per sliding {days} days'
+        title = f'Ratio of deaths over new cases of CoViD-19 deaths per 100 000 per country per sliding {days} days'
+    elif metric == 'ratio':
+        ylabel = f'New CoViD-19 cases per country per sliding {days} days'
+        title = f'Ratio of deaths over new CoViD-19 cases per sliding {days} days'        
     else:
         print(f"{metric} is not amongst the recognised options:\n cases_per100000, deaths_per100000, cases, deaths")
 
@@ -929,11 +938,12 @@ def timeline_global(df: pnd.DataFrame, cumul=False, kind='bar'):
                     'cumul confirmed': conf, 'cumul death': death})
     res = pnd.DataFrame(res)
     if cumul:
-        res.plot(x='date', y=['confirmed', 'death',
+        ax = res.plot(x='date', y=['confirmed', 'death',
                               'cumul confirmed', 'cumul death'], kind=kind)
     else:
-        res.plot(x='date', y=['confirmed', 'death'], kind=kind)
-
+        ax = res.plot(x='date', y=['confirmed', 'death'], kind=kind)
+    simplify_axes(ax)
+    
 
 def plot_3dimensions(df: pnd.DataFrame, country_list=None):
     if country_list is None:
@@ -961,3 +971,29 @@ def plot_cumul_death_confirmed(df: pnd.DataFrame, country_list=None):
                      color="Country",
                      size='cumul recovered', hover_data=['Country'])
     return fig
+
+
+def mark_subplots(axes, letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ', xpos=-0.12, ypos=1.05):
+
+    if not type(axes) is list:
+        axes = [axes]
+
+    for idx, ax in enumerate(axes):
+        ax.text(xpos, ypos, letters[idx].capitalize(),
+                horizontalalignment='center',
+                verticalalignment='center',
+                fontweight='demibold',
+                fontsize=18,
+                transform=ax.transAxes)
+
+
+def simplify_axes(axes):
+
+    if not type(axes) is list:
+        axes = [axes]
+
+    for ax in axes:
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.get_xaxis().tick_bottom()
+        ax.get_yaxis().tick_left()
