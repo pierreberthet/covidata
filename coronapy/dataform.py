@@ -480,7 +480,7 @@ def transform_debug(df: pnd.DataFrame) -> pnd.DataFrame:
     return pnd.DataFrame(res)
 
 
-def get_Xworst_Ydays(df: pnd.DataFrame, ncountries: int, days: int) -> pnd.DataFrame:
+def get_Xworst_Ydays(df: pnd.DataFrame, undf: pnd.DataFrame, ncountries: int, days: int) -> pnd.DataFrame:
     if ncountries is None:
         ncountries = 10
     if days is None:
@@ -494,10 +494,14 @@ def get_Xworst_Ydays(df: pnd.DataFrame, ncountries: int, days: int) -> pnd.DataF
     res = []
 
     for c in tf.Country.unique():
-        # print(f"country {c} sum {ndf[ndf.Country.isin([c])].cumsum('death')}")
+        print(f"country {c} sum {ndf[ndf.Country.isin([c])].cumsum('death')}")
         # print(f"country {c} df {tf[tf.Country.isin([c])]['death'].sum()}")
         res.append(
-            {'Country': c, 'death_total': tf[tf.Country.isin([c])]['death'].sum()})
+            {'Country': c, 'death_total': tf[tf.Country.isin([c])]['death'].sum(),
+             'cases_total': tf[tf.Country.isin([c])]['confirmed'].sum(), 
+             'death_per_100K': (tf[tf.Country.isin([c])]['death'].sum() / get_latest_data(undf, c, list_series(undf)[0]) * 10),
+             'cases_per_100K': (tf[tf.Country.isin([c])]['confirmed'].sum() / get_latest_data(undf, c, list_series(undf)[0]) * 10)
+            })
 
     res.sort(key=lambda k: k['death_total'])
     res

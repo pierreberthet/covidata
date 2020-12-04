@@ -72,7 +72,7 @@ ddf = ndf.copy()
 
 worst_nb = 5
 worst_days = 15
-worstdf = get_Xworst_Ydays(ndf, worst_nb, worst_days)
+worstdf = get_Xworst_Ydays(ndf, undf, worst_nb, worst_days)
 print(f" {worst_nb} worst countries for the last {worst_days} days")
 print(f"{worstdf}")
 
@@ -257,9 +257,11 @@ for c in tqdm(ndf.Country.unique()):
 
 for i, c in enumerate(mismatched):
     print(f"{c} not found in UN dataset, closest automatic match: {closest[i]}")
+print("\nDROPPED:")
+for c in mismatched:
+    print(c)
 
-
-
+ddf = ddf.query("Country!=@mismatched")
 
 focus = ['Norway', 'Sweden', 'France', 'United Kingdom', 'Germany', 'Italy', 'Iran',
          'China', 'Spain', 'Korea, South', 'Singapore', 'Israel', 'Netherlands',
@@ -315,7 +317,7 @@ plot_sliding_per100000(focus_slide, metric='deaths_per100000')
 
 worst_nb = 20
 worst_days = 1
-worstdf = get_Xworst_Ydays(ndf, worst_nb, worst_days)
+worstdf = get_Xworst_Ydays(dddf, undf, worst_nb, worst_days)
 print(f" {worst_nb} worst countries for the last {worst_days} day")
 print(f"{worstdf}")
 
