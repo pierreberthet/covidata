@@ -631,6 +631,12 @@ def plot_sliding_per100000(df: pnd.DataFrame, days: int = 14, metric='cases_per1
         print(f"{metric} is not amongst the recognised options:\n cases_per100000, deaths_per100000, cases, deaths")
 
     fig = px.line(df, x='date', y=metric, color='country')
+
+    # draw an horizontal line on the cases per 100000 figures, at y=20/100000,
+    # representing the Norwegian authorities threshold over which quarantine at arrival is imposed (valid for UE only, but displayed for reference anyway).
+    if metric  == 'cases_per100000':
+        fig.add_shape(type="line", x0=0, x1=1, xref='paper', y0=20, y1=20, line=dict(color="Black", width=2, dash="dot"))
+
     fig.update_layout(title=title,
                       xaxis_title="date",
                       yaxis_title=ylabel)
