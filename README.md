@@ -3,7 +3,7 @@
 ### visualisation with plotly, seaborn, matplotlib
 
 ## Load dataset from JHU
-* to do: get data from URL. Load into pandas DataFrame
+* done: get data from URL. Load into pandas DataFrame
 
 ## Clean dataset
 * regrouped regions into single country *optional*
@@ -23,3 +23,4 @@ ongoing development
 * John Hopkins University Center for Systems Science and Engineering [(JHU CSSE)](https://github.com/CSSEGISandData/COVID-19)
 * .csv covid dataset from [here](https://github.com/RamiKrispin/coronavirus)
 * .csv population and age distribution metrics from [United Nations](https://data.un.org/)
+* socio economic data from [insee.fr](https://www.insee.fr) and [ourworldindata](https://ourworldindata.org/grapher/excess-mortality-raw-death-count)  
