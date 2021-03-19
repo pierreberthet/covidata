@@ -41,6 +41,16 @@ from coronapy.dataform import *
 # %matplotlib inline
 plt.rcParams['figure.figsize'] = [20, 13]
 
+
+cmap = sns.color_palette("colorblind")
+# cmap = sns.color_palette("husl", 8)
+# sns.set_palette("Accent")
+sns.set_palette(cmap)
+sns.set_style('darkgrid')
+sns.set_context('notebook') 
+
+
+
 def toGeoDF(df, geometry="geog"):
     tempDF = df.copy()
     tempDF[geometry] = df[geometry].apply(wkt.loads)
@@ -325,6 +335,29 @@ print(f"{worstdf}")
 norway = ddf.query("Country=='Norway'")
 france = ddf.query("Country=='France'")
 
+
+
+cmap = sns.color_palette("husl", mini.Country.nunique())
+# sns.set_palette("Accent")
+sns.set_palette(cmap)
+f, ax = plt.subplots(figsize=(11, 9))
+
+for ctry in mini.Country.unique():
+    ax.plot(mini.query("@ctry in Country").date, mini.query("@ctry in Country")['cumul death'] / get_latest_data(undf, ctry, list_series(undf)[0]), label=ctry)
+
+
+f.suptitle('Cumul. Deaths per Capita')
+ax.set_xlabel('Date')
+ax.set_ylabel('Cumul. deaths per million inhabitants')
+plt.xticks(rotation=90)
+every_nth = 7
+for n, label in enumerate(ax.xaxis.get_ticklabels()):
+    if n % every_nth != 0:
+        label.set_visible(False)
+# plt.ylabel()
+# plt.legend(loc=1, ncol=10, fontsize=12)
+plt.legend()
+plt.show()
 
 # compute and display the X worst and Y best faring countries in % of pop, and other variables: GDP, % old pop, ...
 
