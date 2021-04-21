@@ -1,4 +1,4 @@
-import pandas as pnd
+import pandas as pd
 import geopandas as gpd
 import seaborn as sns
 from tqdm import trange, tqdm
@@ -47,7 +47,7 @@ def country_basic_data(df, country) -> dict:
             'new deaths': ctry['death'].iloc[-1]}
 
 
-def global_description(df, focus=None) -> pnd.DataFrame:
+def global_description(df, focus=None) -> pd.DataFrame:
     print(f"Data from {df['date'].unique().max()}")
     res = {}
     if focus is None:
@@ -56,17 +56,17 @@ def global_description(df, focus=None) -> pnd.DataFrame:
     else:
         for country in focus:
             res[country] = country_basic_data(df, country)
-    res = pnd.DataFrame(res).T
+    res = pd.DataFrame(res).T
     res.loc['Total'] = res.sum()
     return res
 
 
-def get_country(df, country) -> pnd.DataFrame:
+def get_country(df, country) -> pd.DataFrame:
     assert country in df['Country'].unique().tolist(), print(f"{country} not in list, options are {list_all_countries(df)}")
     return df.query("@country in Country")
 
 
-def get_province(df, province) -> pnd.DataFrame:
+def get_province(df, province) -> pd.DataFrame:
     assert province in df['Province'].unique().tolist(), print(f"{province} not in list, options are {list_provinces(df)}")
     return df.query("@province in Province")
 
@@ -98,7 +98,7 @@ def has_province(df) -> bool:
     return len(df['Province'].unique()) > 1
 
 
-def add_running_sum(df) -> pnd.DataFrame:
+def add_running_sum(df) -> pd.DataFrame:
     '''Returns a dataframe with cumulative entries for the cases [confirmed, recovered, death]
     Specific to a country
     For a multi country list, call 'global_running_sum(df)' instead'''
@@ -122,7 +122,7 @@ def add_running_sum(df) -> pnd.DataFrame:
     return df
 
 
-def global_running_sum(df) -> pnd.DataFrame:
+def global_running_sum(df) -> pd.DataFrame:
     for country in get_all_countries(df):
         if has_province(df[df['country'] == country]):
             for province in get_provinces(df[df['country'] == country]):
@@ -130,7 +130,7 @@ def global_running_sum(df) -> pnd.DataFrame:
     return None
 
 
-def remove_country_with_province(df: pnd.DataFrame, countries=None) -> list:
+def remove_country_with_province(df: pd.DataFrame, countries=None) -> list:
     if countries is None:
         countries = list_all_countries(ndf)
     res = []
@@ -140,13 +140,13 @@ def remove_country_with_province(df: pnd.DataFrame, countries=None) -> list:
     return res
 
 
-def transform_metro(df: pnd.DataFrame) -> pnd.DataFrame:
+def transform_metro(df: pd.DataFrame) -> pd.DataFrame:
     '''Reorganize data with cumul columns and specific case types columns: recovered, death, confirmed.
     Also, for Australia, Canada and China, we sum the data from provinces and return one entry for the country.
     For Denmark, France, Netherlands and the UK, we here discard the non mainland territories. For a different
     approach, please see transform_province(). Also, it puts the 'recovered' data from the Canada entries with
     the cumulative data from the provinces.'''
-    #ndf = pnd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
+    #ndf = pd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
     res = []
     error = []
     for country in tqdm(df['country'].unique().tolist()):
@@ -295,11 +295,11 @@ def transform_metro(df: pnd.DataFrame) -> pnd.DataFrame:
                             'cumul confirmed': rsum[0], 'cumul death': rsum[1], 'cumul recovered': rsum[2]
                             })
     print(error)
-    return pnd.DataFrame(res), error
+    return pd.DataFrame(res), error
 
 
-def transform(df: pnd.DataFrame) -> pnd.DataFrame:
-    #ndf = pnd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
+def transform(df: pd.DataFrame) -> pd.DataFrame:
+    #ndf = pd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
     res = []
     for country in df['country'].unique().tolist():
         tdf = df[df['country'] == country].fillna(country)
@@ -352,10 +352,10 @@ def transform(df: pnd.DataFrame) -> pnd.DataFrame:
                                     'cumul confirmed': rsum[0], 'cumul death': rsum[1],
                                     'cumul recovered': None, 'recovered': None
                                     })
-    return pnd.DataFrame(res)
+    return pd.DataFrame(res)
 
 
-def add_running_sum2(df) -> pnd.DataFrame:
+def add_running_sum2(df) -> pd.DataFrame:
     '''Returns a dataframe with cumulative entries for the cases [confirmed, recovered, death]
     Specific to a country
     For a multi country list, call 'global_running_sum(df)' instead'''
@@ -376,7 +376,7 @@ def add_running_sum2(df) -> pnd.DataFrame:
     return df
 
 
-def test_raw_df(df: pnd.DataFrame) -> dict:
+def test_raw_df(df: pd.DataFrame) -> dict:
     res = {'recovered': True, 'confirmed': True,
            'death': True, 'date': True, 'positive': True}
     for country in df['country'].unique():
@@ -414,7 +414,7 @@ def test_raw_df(df: pnd.DataFrame) -> dict:
     return res
 
 
-def test_transformed_df(df: pnd.DataFrame) -> dict:
+def test_transformed_df(df: pd.DataFrame) -> dict:
     res = {'recovered': True, 'confirmed': True,
            'death': True, 'date': True, 'positive': True}
     for country in df['country'].unique():
@@ -435,8 +435,8 @@ def test_transformed_df(df: pnd.DataFrame) -> dict:
     return res
 
 
-def transform_debug(df: pnd.DataFrame) -> pnd.DataFrame:
-    #ndf = pnd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
+def transform_debug(df: pd.DataFrame) -> pd.DataFrame:
+    #ndf = pd.DataFrame(columns=['Country', 'Province', 'lat', 'lon', 'date', 'confirmed', 'death', 'recovered'])
     res = []
     #df = df.fillna('Metro')
 
@@ -477,10 +477,10 @@ def transform_debug(df: pnd.DataFrame) -> pnd.DataFrame:
                             'death': c[c['type'] == 'death']['cases'].values[0],
                             'cumul confirmed': rsum[0], 'cumul death': rsum[1]
                             })
-    return pnd.DataFrame(res)
+    return pd.DataFrame(res)
 
 
-def get_Xworst_Ydays(df: pnd.DataFrame, ncountries: int, days: int, undf=None) -> pnd.DataFrame:
+def get_Xworst_Ydays(df: pd.DataFrame, ncountries: int, days: int, undf=None) -> pd.DataFrame:
     if ncountries is None:
         ncountries = 10
     if days is None:
@@ -512,11 +512,11 @@ def get_Xworst_Ydays(df: pnd.DataFrame, ncountries: int, days: int, undf=None) -
     res
     max_countries = [k['Country'] for k in res[-ncountries:]]
     # print(f"worst countries: {max_countries} ")
-    return pnd.DataFrame(res[-ncountries:])
+    return pd.DataFrame(res[-ncountries:])
 
 
 
-def get_countries_over_threshold(df: pnd.DataFrame, undf: pnd.DataFrame, threshold: int = 20/100000., window: int = 14):
+def get_countries_over_threshold(df: pd.DataFrame, undf: pd.DataFrame, threshold: int = 20/100000., window: int = 14):
     """
     Returns a list of the countries with a ratio new case per 100000 persons is over a threshold,
     based on the previous window days.
@@ -530,7 +530,7 @@ def get_countries_over_threshold(df: pnd.DataFrame, undf: pnd.DataFrame, thresho
 
 
 
-def print_list_provinces(df: pnd.DataFrame):
+def print_list_provinces(df: pd.DataFrame):
     '''Print the provinces for each Country which has provinces listed.
     It can be useful as some countries have provinces that are really not mainland (eg France, UK, Denmark),
     while some other countries have provinces which are part of mainland (eg Canada, China, Australia).'''
@@ -542,7 +542,7 @@ def print_list_provinces(df: pnd.DataFrame):
 
 
 
-def get_latest_deaths_cumul(df: pnd.DataFrame, country=None):
+def get_latest_deaths_cumul(df: pd.DataFrame, country=None):
     res = []
     if type(country) == str:
         country = [country]
@@ -551,11 +551,11 @@ def get_latest_deaths_cumul(df: pnd.DataFrame, country=None):
     for c in country:
         res.append({'country': c, 'deaths':df.query("@c in Country")['death'][-1],
                     'cases':df.query("@c in Country")['confirmed'][-1]})
-    return pnd.DataFrame(res)
+    return pd.DataFrame(res)
 
 
 
-def get_latest_DeathsCases_days(df: pnd.DataFrame, country=None, days: int = 14):
+def get_latest_DeathsCases_days(df: pd.DataFrame, country=None, days: int = 14):
     res = []
     if type(country) == str:
         country = [country]
@@ -564,10 +564,10 @@ def get_latest_DeathsCases_days(df: pnd.DataFrame, country=None, days: int = 14)
     for c in country:
         res.append({'country': c, 'deaths':sum(df.query("@c in Country")['death'][-days:]),
                     'cases':sum(df.query("@c in Country")['confirmed'][-days:])})
-    return pnd.DataFrame(res)
+    return pd.DataFrame(res)
 
 
-def get_latest_DeathsCases_days_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country = None, days: int = 14):
+def get_latest_DeathsCases_days_per100000(df: pd.DataFrame, undf: pd.DataFrame, country = None, days: int = 14):
     res = []
     if type(country) == str:
         country = [country]
@@ -580,10 +580,10 @@ def get_latest_DeathsCases_days_per100000(df: pnd.DataFrame, undf: pnd.DataFrame
                     'deaths_per100000':sum(df.query("@c in Country")['death'][-days:]) / (get_latest_data(undf, c, list_series(undf)[0]) * 10),
                     'cases_per100000':sum(df.query("@c in Country")['confirmed'][-days:]) / (get_latest_data(undf, c, list_series(undf)[0]) * 10)
                     })
-    return pnd.DataFrame(res)
+    return pd.DataFrame(res)
 
 
-def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country = None, days: int = 14):
+def get_sliding_window_per100000(df: pd.DataFrame, undf: pd.DataFrame, country = None, days: int = 14):
     res = []
     if type(country) == str:
         country = [country]
@@ -599,7 +599,7 @@ def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country
                         'deaths_per100000':sum(country_data.iloc[dx-days + 1:dx + 1]['death']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10),
                         'cases_per100000':sum(country_data.iloc[dx-days + 1:dx + 1]['confirmed']) / (get_latest_data(undf, c, list_series(undf)[0]) * 10)
                         })
-    res = pnd.DataFrame(res)
+    res = pd.DataFrame(res)
     res['ratio_per100000'] = res['deaths_per100000'] / res['cases_per100000']
     res['ratio'] = res['deaths'] / res['cases']
     return res
@@ -608,7 +608,7 @@ def get_sliding_window_per100000(df: pnd.DataFrame, undf: pnd.DataFrame, country
 
 
 
-def plot_sliding_per100000(df: pnd.DataFrame, days: int = 14, metric='cases_per100000', **kwargs):
+def plot_sliding_per100000(df: pd.DataFrame, days: int = 14, metric='cases_per100000', **kwargs):
     if metric == 'cases_per100000':
         ylabel = f'New CoViD-19 cases per 100 000 inhabitants per sliding {days} days'
         title = f'CoViD-19 cases per 100 000 per country per sliding {days} days'
@@ -644,7 +644,7 @@ def plot_sliding_per100000(df: pnd.DataFrame, days: int = 14, metric='cases_per1
     return None
 
 
-def pred_basic_peak_now(df: pnd.DataFrame, country = None, day: int = 5):
+def pred_basic_peak_now(df: pd.DataFrame, country = None, day: int = 5):
     """
     Return the predicted below 20/100000 new cases per 14 days if the peak is today, only supposing the time from
     under 20 / 1000000 to peak will be the same as from peak back to under 20/100000.
@@ -674,7 +674,7 @@ def pred_basic_peak_now(df: pnd.DataFrame, country = None, day: int = 5):
                     'half_peak_span': (peak_day - datetime.strptime(cdf[cdf['cases_per100000']<20.]['date'].iloc[-1], '%Y-%m-%d')).days if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None,
                     'predicted end': str((peak_day + timedelta(days=(peak_day - datetime.strptime(cdf[cdf['cases_per100000']<20.]['date'].iloc[-1], '%Y-%m-%d')).days)).date()) if cdf[cdf['cases_per100000']<20.]['date'].iloc[-1] != cdf['date'].iloc[-1] else None})
 
-    return pnd.DataFrame(res)
+    return pd.DataFrame(res)
         
 
 
@@ -817,7 +817,7 @@ def rainplot_full(df, undf, countries,
     colors = n_colors('rgb(5, 200, 200)', 'rgb(200, 10, 10)', len(countries), colortype='rgb')
     fig = go.Figure()
     # spe_df = df.query("@countries in Country")
-    updated_df = pnd.DataFrame()
+    updated_df = pd.DataFrame()
     series = list_series(undf)
     for cx, country in enumerate(tqdm(countries)):
         
@@ -885,7 +885,7 @@ def test_per_capita(df, undf, country_list):
                     cases {round(cur.iloc[-1]['cumul confirmed'] / latest, 2)}")
 
 
-def data_per_capita(df: pnd.DataFrame, undf: pnd.DataFrame, country):
+def data_per_capita(df: pd.DataFrame, undf: pd.DataFrame, country):
     # res = []
     # for c in country:
     #     c.append({'country':c, 'cases': , 'deaths':})
@@ -904,7 +904,7 @@ fig = px.bar([mini.query("@m in Country").iloc[-1] for m in mini.Country.unique(
 
 
 
-def crosscorr(country: str, normalized: True, ndf: pnd.DataFrame):
+def crosscorr(country: str, normalized: True, ndf: pd.DataFrame):
     '''plot the 10 'best' pairwise cross correlations with the 
     country specified on the mode type provided: ['confirmed', 'death', 'recovered']'''
     cc_recovered = {}
@@ -931,16 +931,16 @@ def crosscorr(country: str, normalized: True, ndf: pnd.DataFrame):
                 cc_death[cnty] = spsig.correlate(
                     ndf.query("@country in Country").death, ndf.query("@cnty in Country").death)
 
-    cc_recovered = pnd.DataFrame(cc_recovered)
-    cc_confirmed = pnd.DataFrame(cc_confirmed)
-    cc_death = pnd.DataFrame(cc_death)
+    cc_recovered = pd.DataFrame(cc_recovered)
+    cc_confirmed = pd.DataFrame(cc_confirmed)
+    cc_death = pd.DataFrame(cc_death)
     return (cc_confirmed, cc_death, cc_recovered)
 
 
 # PLOTTING
 
 
-def timeline_global(df: pnd.DataFrame, cumul=False, kind='bar'):
+def timeline_global(df: pd.DataFrame, cumul=False, kind='bar'):
     assert 'cumul confirmed' in df.columns, f"need a transformed dataset"
     res = []
     conf = 0
@@ -951,7 +951,7 @@ def timeline_global(df: pnd.DataFrame, cumul=False, kind='bar'):
         res.append({'date': day, 'confirmed': df.query("@day in date").confirmed.sum(),
                     'death': df.query("@day in date").death.sum(),
                     'cumul confirmed': conf, 'cumul death': death})
-    res = pnd.DataFrame(res)
+    res = pd.DataFrame(res)
     if cumul:
         ax = res.plot(x='date', y=['confirmed', 'death',
                               'cumul confirmed', 'cumul death'], kind=kind)
@@ -960,7 +960,7 @@ def timeline_global(df: pnd.DataFrame, cumul=False, kind='bar'):
     simplify_axes(ax)
     
 
-def plot_3dimensions(df: pnd.DataFrame, country_list=None):
+def plot_3dimensions(df: pd.DataFrame, country_list=None):
     if country_list is None:
         country_list = df.Country.unique()
     fig = plt.figure()
@@ -972,7 +972,7 @@ def plot_3dimensions(df: pnd.DataFrame, country_list=None):
     return ax
 
 
-def plot_cumul_death_confirmed(df: pnd.DataFrame, country_list=None):
+def plot_cumul_death_confirmed(df: pd.DataFrame, country_list=None):
     if country_list is None:
         country_list = df.Country.unique()
     # fig = go.Figure()

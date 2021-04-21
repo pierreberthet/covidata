@@ -7,7 +7,7 @@ Created in April 2020
 """
 
 
-import pandas as pnd
+import pandas as pd
 import geopandas as gpd
 import seaborn as sns
 from tqdm import trange, tqdm
@@ -71,7 +71,7 @@ fcsv = '../coronavirus/csv/coronavirus.csv'
 assert os.path.isfile(fcsv), f"{fcsv} does not exist in {os.getcwd()}"
 
 
-df = pnd.read_csv(fcsv)
+df = pd.read_csv(fcsv)
 print(f"loading John Hopkins University of Medecine data, cleaning and reformating dataset")
 ndf, error = transform_metro(df)
 
@@ -142,7 +142,7 @@ res = {}
 for country in focus:
     res[country] = (ndf.query("@country in Country").confirmed.values)
 
-res = pnd.DataFrame(res, columns=focus)
+res = pd.DataFrame(res, columns=focus)
 
 ####################################
 # Correlation
@@ -181,12 +181,12 @@ res = {}
 for country in focus:
     res[country] = (ndf.query("@country in Country").confirmed.values)
 
-res = pnd.DataFrame(res, columns=focus)
+res = pd.DataFrame(res, columns=focus)
 crosscorr_df = {}
 for combi in combinations:
     crosscorr_df[combi] = spsig.correlate(ndf.query("@combi[0] in Country").confirmed, ndf.query("@combi[1] in Country").confirmed)
 
-crosscorr_df = pnd.DataFrame(crosscorr_df)
+crosscorr_df = pd.DataFrame(crosscorr_df)
 
 ax = plt.figure().add_subplot(111)
 ax.plot(spsig.correlate(ndf.query("'France' in Country").death / ndf.query("'France' in Country").death.max(),
@@ -207,7 +207,7 @@ simplify_axes(ax_reco)
 plt.show()
 
 
-undf = pnd.read_csv('external_data/UNData_Population, Surface Area and Density.csv', encoding='ISO-8859-1')
+undf = pd.read_csv('external_data/UNData_Population, Surface Area and Density.csv', encoding='ISO-8859-1')
 undf.rename(columns={'Unnamed: 3': 'series'}, inplace=True)
 undf.rename(columns={'Unnamed: 4': 'numerics'}, inplace=True)
 undf.rename(columns={'Unnamed: 6': 'source'}, inplace=True)
@@ -363,6 +363,16 @@ plt.show()
 
 
 # compute and assess per capita results with some wikipedia entries.
+
+
+
+#####>>>>>>  new DELVE datasets
+## https://github.com/rs-delve/covid19_datasets/
+delve = pd.read_csv('https://raw.githubusercontent.com/rs-delve/covid19_datasets/master/dataset/combined_dataset_latest.csv', parse_dates=['DATE'])
+
+
+
+
 
 ################
 ################
